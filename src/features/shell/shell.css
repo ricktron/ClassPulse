@@ -1,0 +1,65 @@
+.shell {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1.25rem 1rem 2.5rem;
+}
+
+.shell-header h1 {
+  margin: 0 0 0.35rem;
+  font-size: 1.75rem;
+  letter-spacing: -0.02em;
+}
+
+.muted {
+  color: var(--muted);
+  margin: 0;
+}
+
+.fineprint {
+  font-size: 0.875rem;
+  margin-top: 0.75rem;
+}
+
+.panel {
+  margin-top: 1.5rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-elevated);
+}
+
+.panel h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.session-title {
+  margin: 0 0 0.35rem;
+  font-weight: 600;
+}
+
+.mode-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mode-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 0.9rem;
+  text-transform: capitalize;
+  background: var(--surface);
+}
+
+.mode-pill.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+}
