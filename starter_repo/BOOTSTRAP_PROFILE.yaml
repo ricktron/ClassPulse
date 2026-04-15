@@ -1,0 +1,19 @@
+# Optional metadata — mirrors STARTER_CARD.md; safe to ignore on day one.
+# Align field names with docs/bootstrap/BOOTSTRAP_PROFILE_TEMPLATE.yaml (Forge).
+
+schema_version: 1
+
+project:
+  name: "" # Same as STARTER_CARD project name when set
+
+intent:
+  what: "" # Maps to Q1 letters A/B/C or a short phrase
+  audience: "" # Q2
+  start_mode: "" # Q3 — e.g. A, B, C, or not_sure
+  starting_with: "" # Q4 — e.g. A, B, C, or not_sure
+
+notes: ""
+
+meta:
+  last_reviewed: ""
+  owner: ""

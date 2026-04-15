@@ -1,0 +1,26 @@
+# OS / filesystem noise
+.DS_Store
+**/.DS_Store
+._*
+**/._*
+Thumbs.db
+**/Thumbs.db
+Desktop.ini
+**/Desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Common build / cache outputs
+coverage/
+dist/
+build/
+.cache/
+
+# Editor / IDE local state (keep team defaults in-repo if you add them later)
+.vscode/
+.idea/
