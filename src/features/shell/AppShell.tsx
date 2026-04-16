@@ -19,11 +19,8 @@ async function loadSessionsFromDb(): Promise<SessionRecord[]> {
 
 async function loadParticipationEventsForSession(sessionId: string): Promise<ParticipationEvent[]> {
   const db = await getDatabase()
-  return db.participationEvents
-    .where('sessionId')
-    .equals(sessionId)
-    .sortBy('createdAt')
-    .then((rows) => rows.reverse())
+  const rows = await db.participationEvents.where('sessionId').equals(sessionId).toArray()
+  return rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 }
 
 export function AppShell() {

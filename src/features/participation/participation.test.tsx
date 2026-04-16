@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import App from '../../App'
 import { resetDatabaseForTests } from '../../db/database'
@@ -58,13 +58,16 @@ describe('ParticipationPanel', () => {
     const captureBtn = within(section).getByRole('button', { name: /\+ participation/i })
 
     fireEvent.click(captureBtn)
-    // Wait for first event to appear.
+    // Wait for the first event to appear before clicking again.
     await within(section).findByRole('list', { name: /recent participation events/i })
-    fireEvent.click(captureBtn)
+    expect(within(section).getAllByRole('listitem')).toHaveLength(1)
 
-    const list = await within(section).findByRole('list', { name: /recent participation events/i })
-    const items = within(list).getAllByRole('listitem')
-    expect(items.length).toBeGreaterThanOrEqual(2)
+    fireEvent.click(captureBtn)
+    // Wait for the second event to appear.
+    await waitFor(() => {
+      const list = within(section).getByRole('list', { name: /recent participation events/i })
+      expect(within(list).getAllByRole('listitem').length).toBeGreaterThanOrEqual(2)
+    })
   })
 
   it('returns to the no-active-session empty state after the session is ended', async () => {
