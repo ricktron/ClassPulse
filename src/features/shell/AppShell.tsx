@@ -2,8 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import type { SessionModeV1 } from '../../domain/modes'
 import { SESSION_MODES_V1 } from '../../domain/modes'
 import type { SessionRecord } from '../../domain/session'
+import { resolveActiveSession } from '../../domain/session'
 import { getDatabase } from '../../db/database'
-import { seedSampleDataIfEmpty } from '../../db/seed'
 
 type LoadState =
   | { status: 'loading' }
@@ -12,7 +12,6 @@ type LoadState =
 
 async function loadSessionsFromDb(): Promise<SessionRecord[]> {
   const db = await getDatabase()
-  await seedSampleDataIfEmpty(db)
   return db.sessions.orderBy('startedAt').reverse().toArray()
 }
 
@@ -42,13 +41,42 @@ export function AppShell() {
   }, [])
 
   /**
-   * Mode strip persistence (Slice 1): exactly one `activeMode` on the primary session row.
+   * Mode strip persistence (Slice 1): exactly one `activeMode` on the active session row.
    * Writes go straight to Dexie `sessions`; reload remounts and re-reads the same row.
-   * No event log, packs, or settings-table indirection in this slice.
    */
-  const selectMode = useCallback(async (mode: SessionModeV1, primaryId: string) => {
+  const selectMode = useCallback(async (mode: SessionModeV1, sessionId: string) => {
     const db = await getDatabase()
-    await db.sessions.update(primaryId, { activeMode: mode })
+    await db.sessions.update(sessionId, { activeMode: mode })
+    const sessions = await db.sessions.orderBy('startedAt').reverse().toArray()
+    setState({ status: 'ready', sessions })
+  }, [])
+
+  /**
+   * Slice 2: Start a new session. The new session immediately becomes active.
+   * Default mode is participation — the fresh local default.
+   */
+  const startSession = useCallback(async () => {
+    const db = await getDatabase()
+    const now = new Date().toISOString()
+    const newSession: SessionRecord = {
+      id: crypto.randomUUID(),
+      title: `Session – ${now.slice(0, 10)}`,
+      startedAt: now,
+      activeMode: 'participation',
+    }
+    await db.sessions.add(newSession)
+    const sessions = await db.sessions.orderBy('startedAt').reverse().toArray()
+    setState({ status: 'ready', sessions })
+  }, [])
+
+  /**
+   * Slice 2: End the active session. Sets `endedAt`; the session is no longer
+   * treated as active by `resolveActiveSession`. The shell transitions to the
+   * no-active-session empty state.
+   */
+  const endSession = useCallback(async (sessionId: string) => {
+    const db = await getDatabase()
+    await db.sessions.update(sessionId, { endedAt: new Date().toISOString() })
     const sessions = await db.sessions.orderBy('startedAt').reverse().toArray()
     setState({ status: 'ready', sessions })
   }, [])
@@ -69,7 +97,7 @@ export function AppShell() {
     )
   }
 
-  const primary = state.sessions[0]
+  const active = resolveActiveSession(state.sessions)
 
   return (
     <main className="shell">
@@ -83,18 +111,29 @@ export function AppShell() {
 
       <section className="panel" aria-labelledby="sessions-heading">
         <h2 id="sessions-heading">Session (device-local)</h2>
-        {primary ? (
+        {active ? (
           <div>
-            <p className="session-title">{primary.title}</p>
+            <p className="session-title">{active.title}</p>
             <p className="muted">
-              Started <time dateTime={primary.startedAt}>{primary.startedAt}</time>
+              Started <time dateTime={active.startedAt}>{active.startedAt}</time>
             </p>
             <p className="muted">
-              Active mode: <strong>{primary.activeMode}</strong>
+              Active mode: <strong>{active.activeMode}</strong>
             </p>
+            <button
+              type="button"
+              onClick={() => void endSession(active.id)}
+            >
+              End session
+            </button>
           </div>
         ) : (
-          <p className="muted">No session rows yet (unexpected after seed).</p>
+          <div>
+            <p className="muted">No active session.</p>
+            <button type="button" onClick={() => void startSession()}>
+              Start session
+            </button>
+          </div>
         )}
       </section>
 
@@ -102,17 +141,17 @@ export function AppShell() {
         <h2 id="modes-heading">v1 mode strip</h2>
         <ul className="mode-list" aria-label="V1 modes">
           {SESSION_MODES_V1.map((mode) => {
-            const isActive = mode === primary?.activeMode
+            const isActive = mode === active?.activeMode
             return (
               <li key={mode}>
                 <button
                   type="button"
                   className={isActive ? 'mode-pill active' : 'mode-pill'}
                   aria-pressed={isActive}
-                  disabled={!primary}
+                  disabled={!active}
                   onClick={() => {
-                    if (!primary || primary.activeMode === mode) return
-                    void selectMode(mode, primary.id)
+                    if (!active || active.activeMode === mode) return
+                    void selectMode(mode, active.id)
                   }}
                 >
                   {mode}
