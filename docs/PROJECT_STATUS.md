@@ -1,6 +1,6 @@
 # Project status
 
-**Last updated:** 2026-04-16  
+**Last updated:** 2026-04-16 (strategy-truth closeout doc pass)  
 **Phase:** Bootstrap complete. The local-first foundation shell is already beyond pure scaffold status: **Slice 1** (persisted shell `activeMode`), **Slice 2** (explicit session lifecycle), **Slice 3** (participation quick capture), and **Slice 4** (behavior quick capture) are shipped. **Governance parity lane:** repo-native agent OS (startup checklist, closeout, receipts / handoff, sanity runbook, journal) landed separately — see `docs/ai/` and `docs/WORKFLOWS/`.
 
 ## What exists today
@@ -47,7 +47,16 @@
 
 ## Next focus
 
-Lock the remaining high-leverage product seams before new implementation resumes, then take the first bounded backup/export slice that honors the canonical local-first + optional Google backup contract.
+Take **Slice 5 — JSON export + confirmed import replace** as the **next bounded product slice** (see `docs/SLICE_PLAN.md` and `DECISIONS.md` D14). Optional **Google-connected backup/export** remains the named longer-term durability layer (`DECISIONS.md` D10) and lands **after** that JSON slice without changing v1 replace semantics.
+
+The project is **ready for a separate Control Tower orchestration chat** when the operator wants it; **implementation lanes still follow checked-in repo truth**, not chat memory.
+
+## Process posture (strategy alignment)
+
+- **Governance parity** (startup checklist, closeout, receipts, handoff standard, sanity runbook) is treated as **complete and sufficient for now**.  
+- **Optional governance automation** (e.g. scripted handoff rebuild locks) stays **deferred** — **do not reopen** that lane unless receipt/handoff automation is **clearly** worth the complexity.  
+- Prefer **fresh bounded slice chats** for new implementation work, aligned to `docs/SLICE_PLAN.md`.  
+- **External research** is **advisory only** until distilled into repo docs (see `AGENTS.md` source-of-truth hierarchy).
 
 ## Agent operating model (repo-native)
 

@@ -26,7 +26,9 @@ Optional **non-authoritative** reference material: [`starter_repo/`](../../start
 - **No silent reduction** — explain before removing or crushing meaningful content.  
 - **Smallest safe change** — minimal diff unless a larger fix avoids debt.  
 - **Workflows live in `docs/WORKFLOWS/`** — link there instead of duplicating long process text.  
-- **Canon-first for ClassPulse** — checked-in files under `docs/`, `DECISIONS.md`, and `AGENTS.md` are authoritative.
+- **Canon-first for ClassPulse** — checked-in files under `docs/`, `DECISIONS.md`, and `AGENTS.md` are authoritative.  
+- **Bounded slices for new work** — default new implementation to explicit slice contracts in [`docs/SLICE_PLAN.md`](../SLICE_PLAN.md) rather than open-ended multi-topic threads.  
+- **External research is non-authoritative** until captured in repo docs (see [`AGENTS.md`](../../AGENTS.md) hierarchy).
 
 ## Before coding (implementation tasks)
 

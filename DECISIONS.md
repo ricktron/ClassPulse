@@ -72,7 +72,7 @@ Use a short heading plus:
 
 **Since:** 2026-04-15
 
-**Status:** Superseded on 2026-04-16 by D10 while the product guidance baseline moved to optional Google-connected backup/export first. JSON restore/import may still return later, but it is no longer the locked primary v1 durability direction.
+**Status:** Superseded on 2026-04-16 by D10 for **primary long-term durability posture naming** (optional Google-connected backup/export). **Implementation sequencing** for the next backup/restore slice remains explicit in **D14** and `docs/SLICE_PLAN.md` (JSON export + confirmed import replace).
 
 ---
 
@@ -80,7 +80,7 @@ Use a short heading plus:
 
 **Decision:** **Assessment completion timestamps** are explicitly **not** required for core true v1; they ship in **v1.1**.
 
-**Why:** True v1 optimizes for a usable live classroom shell first; timestamped assessment analytics can follow without blocking the shell.
+**Why:** True v1 optimizes for a usable live classroom shell first; timestamped assessment analytics can follow without blocking the shell. In v1.1+, timestamps support **classroom-oriented analysis**: comparing finish-time patterns against assessment outcomes and overall course performance.
 
 **Since:** 2026-04-15
 
@@ -141,5 +141,15 @@ Use a short heading plus:
 **Decision:** ClassPulse v1 uses a small fixed canonical event/tag vocabulary rather than a user-defined taxonomy builder.
 
 **Why:** A compact fixed set is faster to use live, easier to export consistently, and less likely to fragment before real classroom usage validates customization needs.
+
+**Since:** 2026-04-16
+
+---
+
+## D14 — Next bounded backup slice is JSON export + confirmed import replace
+
+**Decision:** The **next bounded implementation slice** for backup/restore ships **JSON export** and **import that replaces** local data after explicit confirmation, with **no merge** logic in v1, as tracked in `docs/SLICE_PLAN.md` (Slice 5).
+
+**Why:** Gives teachers an immediate, inspectable, offline-friendly recovery path while optional Google-connected backup/export (D10) lands later as an adapter without changing the v1 replace semantics for local restore.
 
 **Since:** 2026-04-16
