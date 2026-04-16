@@ -72,6 +72,8 @@ Use a short heading plus:
 
 **Since:** 2026-04-15
 
+**Status:** Superseded on 2026-04-16 by D10 while the product guidance baseline moved to optional Google-connected backup/export first. JSON restore/import may still return later, but it is no longer the locked primary v1 durability direction.
+
 ---
 
 ## D7 — Assessment completion timestamps land in v1.1
@@ -101,3 +103,43 @@ Use a short heading plus:
 **Why:** `vite-plugin-pwa@1.2.0` currently declares peer support only through Vite 7; Vite 8 works in practice for many apps, but staying on supported peers keeps `npm install` deterministic without overrides.
 
 **Since:** 2026-04-15
+
+---
+
+## D10 — Optional Google-connected backup/export is the primary durability direction
+
+**Decision:** ClassPulse v1 does **not** require login for local use, but the primary planned durability layer beyond local IndexedDB is **optional Google-connected backup/export**, not JSON-first backup.
+
+**Why:** This preserves frictionless classroom capture on iPad while aligning the product with the locked storage posture and the teacher-owned Google Workspace recovery path.
+
+**Since:** 2026-04-16
+
+---
+
+## D11 — SessionRecord is the primary unit of work
+
+**Decision:** `SessionRecord` is the canonical v1 unit of work, and all capture/export behavior is organized around explicit class sessions.
+
+**Why:** Session-first structure matches real classroom periods, keeps exports legible, and prevents ambiguity about where observations belong.
+
+**Since:** 2026-04-16
+
+---
+
+## D12 — Sessions close only by explicit teacher action
+
+**Decision:** A session closes only when the teacher explicitly ends it; backgrounding or tab/app switching may trigger checkpointing but must not silently end the session.
+
+**Why:** iPad/Safari lifecycle events are not a trustworthy proxy for classroom completion, and teachers regularly switch contexts during class.
+
+**Since:** 2026-04-16
+
+---
+
+## D13 — Fixed starter event/tag vocabulary for v1
+
+**Decision:** ClassPulse v1 uses a small fixed canonical event/tag vocabulary rather than a user-defined taxonomy builder.
+
+**Why:** A compact fixed set is faster to use live, easier to export consistently, and less likely to fragment before real classroom usage validates customization needs.
+
+**Since:** 2026-04-16
