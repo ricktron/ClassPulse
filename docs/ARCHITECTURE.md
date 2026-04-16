@@ -23,26 +23,32 @@
 ```
 src/
   domain/        # Types, enums, and cross-cutting contracts
-  db/            # Dexie database + seed helpers
+  db/            # Dexie database + helpers
   features/      # Vertical slices (UI + behaviors), e.g. shell/
   test/          # Shared test setup
 ```
 
 Future slices should add **feature folders** under `src/features/<slice>/` rather than growing a monolithic `components/` tree without intent.
 
-## Data model (scaffold)
+## Data model (current scaffold)
 
-Version **1** Dexie schema:
+Current Dexie schema version: **3**.
 
-- `sessions` — one row per class meeting (`SessionRecord`).  
-- `settings` — keyed documents, including `schemaVersion`.
+Tables:
 
-The scaffold seeds a **sample session** only when the database is empty so first-run UX is intelligible. Production import/export flows **replace** local state per `docs/V1_SCOPE.md`.
+- `sessions` — one row per class meeting (`SessionRecord`), including persisted `activeMode` and optional `endedAt`.  
+- `settings` — keyed documents, including `schemaVersion`.  
+- `participationEvents` — append-only quick-capture participation rows keyed to a session.  
+- `behaviorEvents` — append-only quick-capture behavior rows keyed to a session.
+
+The standard app runtime currently starts with an **empty local store** and presents an explicit empty state until the teacher starts a session. `seedSampleDataIfEmpty()` exists as an explicit helper for tests and controlled dev/demo paths; it is **not** part of the normal runtime bootstrap.
+
+Production import/export flows still follow the contract in `docs/V1_SCOPE.md`: JSON is authoritative, and import replaces local data after explicit confirmation.
 
 ## Service boundaries
 
 - **No network dependency** for the core shell.  
-- Optional future connectors (e.g., Google Workspace backup) must remain **adapters** behind stable local interfaces — not silent primary storage.
+- Optional future connectors (e.g. Google Workspace backup) must remain **adapters** behind stable local interfaces, not silent primary storage.
 
 ## Build outputs
 
