@@ -1,18 +1,29 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { SessionModeV1 } from '../../domain/modes'
 import { SESSION_MODES_V1 } from '../../domain/modes'
+import type { ParticipationEvent } from '../../domain/participation'
 import type { SessionRecord } from '../../domain/session'
 import { resolveActiveSession } from '../../domain/session'
 import { getDatabase } from '../../db/database'
+import { ParticipationPanel } from '../participation/ParticipationPanel'
 
 type LoadState =
   | { status: 'loading' }
   | { status: 'error'; message: string }
-  | { status: 'ready'; sessions: SessionRecord[] }
+  | { status: 'ready'; sessions: SessionRecord[]; participationEvents: ParticipationEvent[] }
 
 async function loadSessionsFromDb(): Promise<SessionRecord[]> {
   const db = await getDatabase()
   return db.sessions.orderBy('startedAt').reverse().toArray()
+}
+
+async function loadParticipationEventsForSession(sessionId: string): Promise<ParticipationEvent[]> {
+  const db = await getDatabase()
+  return db.participationEvents
+    .where('sessionId')
+    .equals(sessionId)
+    .sortBy('createdAt')
+    .then((rows) => rows.reverse())
 }
 
 export function AppShell() {
@@ -24,8 +35,12 @@ export function AppShell() {
     void (async () => {
       try {
         const sessions = await loadSessionsFromDb()
+        const active = resolveActiveSession(sessions)
+        const participationEvents = active
+          ? await loadParticipationEventsForSession(active.id)
+          : []
         if (!cancelled) {
-          setState({ status: 'ready', sessions })
+          setState({ status: 'ready', sessions, participationEvents })
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Unknown error'
@@ -48,7 +63,11 @@ export function AppShell() {
     const db = await getDatabase()
     await db.sessions.update(sessionId, { activeMode: mode })
     const sessions = await db.sessions.orderBy('startedAt').reverse().toArray()
-    setState({ status: 'ready', sessions })
+    const active = resolveActiveSession(sessions)
+    const participationEvents = active
+      ? await loadParticipationEventsForSession(active.id)
+      : []
+    setState({ status: 'ready', sessions, participationEvents })
   }, [])
 
   /**
@@ -66,7 +85,11 @@ export function AppShell() {
     }
     await db.sessions.add(newSession)
     const sessions = await db.sessions.orderBy('startedAt').reverse().toArray()
-    setState({ status: 'ready', sessions })
+    const active = resolveActiveSession(sessions)
+    const participationEvents = active
+      ? await loadParticipationEventsForSession(active.id)
+      : []
+    setState({ status: 'ready', sessions, participationEvents })
   }, [])
 
   /**
@@ -78,7 +101,25 @@ export function AppShell() {
     const db = await getDatabase()
     await db.sessions.update(sessionId, { endedAt: new Date().toISOString() })
     const sessions = await db.sessions.orderBy('startedAt').reverse().toArray()
-    setState({ status: 'ready', sessions })
+    setState({ status: 'ready', sessions, participationEvents: [] })
+  }, [])
+
+  /**
+   * Slice 3: Append a minimal participation event for the active session.
+   * Append-only; no editing or deletion workflow in v1.
+   */
+  const captureParticipation = useCallback(async (sessionId: string) => {
+    const db = await getDatabase()
+    const event: ParticipationEvent = {
+      id: crypto.randomUUID(),
+      sessionId,
+      createdAt: new Date().toISOString(),
+    }
+    await db.participationEvents.add(event)
+    const events = await loadParticipationEventsForSession(sessionId)
+    setState((prev) =>
+      prev.status === 'ready' ? { ...prev, participationEvents: events } : prev,
+    )
   }, [])
 
   if (state.status === 'loading') {
@@ -165,6 +206,14 @@ export function AppShell() {
           teacher-editable in future slices.
         </p>
       </section>
+
+      <ParticipationPanel
+        sessionId={active?.id}
+        events={state.participationEvents}
+        onCapture={() => {
+          if (active) void captureParticipation(active.id)
+        }}
+      />
     </main>
   )
 }
