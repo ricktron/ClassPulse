@@ -4,16 +4,18 @@
 
 ClassPulse is designed **local-first**: classroom observations and participation notes should remain **on the teacher’s device** under normal operation. Nothing in the current scaffold sends classroom data to remote servers automatically.
 
-## What the scaffold stores
+## What the current scaffold stores
 
 - **IndexedDB database name:** `classpulse`  
-- **Tables (v1 schema):** `sessions`, `settings`  
-- **Seed data:** a disposable sample session is created **only** when the database is empty, to make the architecture visible during development.
+- **Current Dexie schema version:** `3`  
+- **Tables:** `sessions`, `settings`, `participationEvents`, `behaviorEvents`  
+- **Runtime bootstrap:** the normal app path starts empty and waits for the teacher to start a session.  
+- **Seed helper:** `seedSampleDataIfEmpty()` exists for tests and controlled dev/demo paths only; it is not invoked automatically by the standard runtime.
 
 ## Backups and exports (contract, not yet fully implemented)
 
 - **Authoritative backup format:** JSON on disk (or teacher-controlled cloud folders), per `docs/V1_SCOPE.md`.  
-- **Import:** must **replace** local data after explicit confirmation — **no merge** in v1.  
+- **Import:** must **replace** local data after explicit confirmation. **No merge** in v1.  
 - Teachers should treat backup files like credentials: they can contain **student-related** information depending on how the product is used.
 
 ## Third parties
