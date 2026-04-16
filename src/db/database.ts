@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie'
+import type { BehaviorEvent } from '../domain/behavior'
 import type { ParticipationEvent } from '../domain/participation'
 import type { AppSettingRecord } from '../domain/settings'
 import type { SessionRecord } from '../domain/session'
@@ -7,6 +8,7 @@ export class ClassPulseDB extends Dexie {
   sessions!: EntityTable<SessionRecord, 'id'>
   settings!: EntityTable<AppSettingRecord, 'key'>
   participationEvents!: EntityTable<ParticipationEvent, 'id'>
+  behaviorEvents!: EntityTable<BehaviorEvent, 'id'>
 
   constructor() {
     super('classpulse')
@@ -18,6 +20,12 @@ export class ClassPulseDB extends Dexie {
       sessions: 'id, startedAt',
       settings: 'key',
       participationEvents: 'id, sessionId, createdAt',
+    })
+    this.version(3).stores({
+      sessions: 'id, startedAt',
+      settings: 'key',
+      participationEvents: 'id, sessionId, createdAt',
+      behaviorEvents: 'id, sessionId, createdAt',
     })
   }
 }

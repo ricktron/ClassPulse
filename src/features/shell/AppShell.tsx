@@ -1,16 +1,23 @@
 import { useCallback, useEffect, useState } from 'react'
+import type { BehaviorEvent, BehaviorEventKind } from '../../domain/behavior'
 import type { SessionModeV1 } from '../../domain/modes'
 import { SESSION_MODES_V1 } from '../../domain/modes'
 import type { ParticipationEvent } from '../../domain/participation'
 import type { SessionRecord } from '../../domain/session'
 import { resolveActiveSession } from '../../domain/session'
 import { getDatabase } from '../../db/database'
+import { BehaviorPanel } from '../behavior/BehaviorPanel'
 import { ParticipationPanel } from '../participation/ParticipationPanel'
 
 type LoadState =
   | { status: 'loading' }
   | { status: 'error'; message: string }
-  | { status: 'ready'; sessions: SessionRecord[]; participationEvents: ParticipationEvent[] }
+  | {
+      status: 'ready'
+      sessions: SessionRecord[]
+      participationEvents: ParticipationEvent[]
+      behaviorEvents: BehaviorEvent[]
+    }
 
 async function loadSessionsFromDb(): Promise<SessionRecord[]> {
   const db = await getDatabase()
@@ -20,6 +27,12 @@ async function loadSessionsFromDb(): Promise<SessionRecord[]> {
 async function loadParticipationEventsForSession(sessionId: string): Promise<ParticipationEvent[]> {
   const db = await getDatabase()
   const rows = await db.participationEvents.where('sessionId').equals(sessionId).toArray()
+  return rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+}
+
+async function loadBehaviorEventsForSession(sessionId: string): Promise<BehaviorEvent[]> {
+  const db = await getDatabase()
+  const rows = await db.behaviorEvents.where('sessionId').equals(sessionId).toArray()
   return rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 }
 
@@ -36,8 +49,9 @@ export function AppShell() {
         const participationEvents = active
           ? await loadParticipationEventsForSession(active.id)
           : []
+        const behaviorEvents = active ? await loadBehaviorEventsForSession(active.id) : []
         if (!cancelled) {
-          setState({ status: 'ready', sessions, participationEvents })
+          setState({ status: 'ready', sessions, participationEvents, behaviorEvents })
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Unknown error'
@@ -64,7 +78,8 @@ export function AppShell() {
     const participationEvents = active
       ? await loadParticipationEventsForSession(active.id)
       : []
-    setState({ status: 'ready', sessions, participationEvents })
+    const behaviorEvents = active ? await loadBehaviorEventsForSession(active.id) : []
+    setState({ status: 'ready', sessions, participationEvents, behaviorEvents })
   }, [])
 
   /**
@@ -86,7 +101,8 @@ export function AppShell() {
     const participationEvents = active
       ? await loadParticipationEventsForSession(active.id)
       : []
-    setState({ status: 'ready', sessions, participationEvents })
+    const behaviorEvents = active ? await loadBehaviorEventsForSession(active.id) : []
+    setState({ status: 'ready', sessions, participationEvents, behaviorEvents })
   }, [])
 
   /**
@@ -98,7 +114,7 @@ export function AppShell() {
     const db = await getDatabase()
     await db.sessions.update(sessionId, { endedAt: new Date().toISOString() })
     const sessions = await db.sessions.orderBy('startedAt').reverse().toArray()
-    setState({ status: 'ready', sessions, participationEvents: [] })
+    setState({ status: 'ready', sessions, participationEvents: [], behaviorEvents: [] })
   }, [])
 
   /**
@@ -116,6 +132,25 @@ export function AppShell() {
     const events = await loadParticipationEventsForSession(sessionId)
     setState((prev) =>
       prev.status === 'ready' ? { ...prev, participationEvents: events } : prev,
+    )
+  }, [])
+
+  /**
+   * Slice 4: Append a minimal behavior event for the active session.
+   * Append-only; no editing or deletion workflow in v1.
+   */
+  const captureBehavior = useCallback(async (sessionId: string, kind: BehaviorEventKind) => {
+    const db = await getDatabase()
+    const event: BehaviorEvent = {
+      id: crypto.randomUUID(),
+      sessionId,
+      createdAt: new Date().toISOString(),
+      kind,
+    }
+    await db.behaviorEvents.add(event)
+    const events = await loadBehaviorEventsForSession(sessionId)
+    setState((prev) =>
+      prev.status === 'ready' ? { ...prev, behaviorEvents: events } : prev,
     )
   }, [])
 
@@ -209,6 +244,14 @@ export function AppShell() {
         events={state.participationEvents}
         onCapture={() => {
           if (active) void captureParticipation(active.id)
+        }}
+      />
+
+      <BehaviorPanel
+        sessionId={active?.id}
+        events={state.behaviorEvents}
+        onCapture={(kind) => {
+          if (active) void captureBehavior(active.id, kind)
         }}
       />
     </main>
