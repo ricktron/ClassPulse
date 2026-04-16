@@ -5,6 +5,9 @@ export interface SessionRecord {
   id: string
   title: string
   startedAt: string
-  /** Active workflow mode for this device instance. */
+  /**
+   * Active top-level mode for this meeting on this device (v1: one teacher / one app instance).
+   * Persisted in Dexie; the mode strip reads and updates this field only — no separate settings row.
+   */
   activeMode: SessionModeV1
 }

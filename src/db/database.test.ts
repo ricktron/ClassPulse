@@ -19,6 +19,8 @@ describe('ClassPulseDB', () => {
 
     const sessions = await db.sessions.toArray()
     expect(sessions.length).toBeGreaterThanOrEqual(1)
+    const sample = sessions.find((s) => s.title.includes('Sample session'))
+    expect(sample?.activeMode).toBe('participation')
     await db.close()
   })
 

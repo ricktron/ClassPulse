@@ -1,10 +1,11 @@
-import { SESSION_MODES_V1, type SessionModeV1 } from '../domain/modes'
+import type { SessionModeV1 } from '../domain/modes'
 import type { SessionRecord } from '../domain/session'
 import { SETTINGS_SCHEMA_VERSION_KEY } from '../domain/settings'
 import type { ClassPulseDB } from './database'
 
+/** Fresh device-local session: Participation is the default shell mode (not list order). */
 function defaultActiveMode(): SessionModeV1 {
-  return SESSION_MODES_V1[0]
+  return 'participation'
 }
 
 /**

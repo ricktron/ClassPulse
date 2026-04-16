@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import type { SessionModeV1 } from '../../domain/modes'
 import { SESSION_MODES_V1 } from '../../domain/modes'
 import type { SessionRecord } from '../../domain/session'
 import { getDatabase } from '../../db/database'
@@ -9,6 +10,12 @@ type LoadState =
   | { status: 'error'; message: string }
   | { status: 'ready'; sessions: SessionRecord[] }
 
+async function loadSessionsFromDb(): Promise<SessionRecord[]> {
+  const db = await getDatabase()
+  await seedSampleDataIfEmpty(db)
+  return db.sessions.orderBy('startedAt').reverse().toArray()
+}
+
 export function AppShell() {
   const [state, setState] = useState<LoadState>({ status: 'loading' })
 
@@ -17,9 +24,7 @@ export function AppShell() {
 
     void (async () => {
       try {
-        const db = await getDatabase()
-        await seedSampleDataIfEmpty(db)
-        const sessions = await db.sessions.orderBy('startedAt').reverse().toArray()
+        const sessions = await loadSessionsFromDb()
         if (!cancelled) {
           setState({ status: 'ready', sessions })
         }
@@ -34,6 +39,18 @@ export function AppShell() {
     return () => {
       cancelled = true
     }
+  }, [])
+
+  /**
+   * Mode strip persistence (Slice 1): exactly one `activeMode` on the primary session row.
+   * Writes go straight to Dexie `sessions`; reload remounts and re-reads the same row.
+   * No event log, packs, or settings-table indirection in this slice.
+   */
+  const selectMode = useCallback(async (mode: SessionModeV1, primaryId: string) => {
+    const db = await getDatabase()
+    await db.sessions.update(primaryId, { activeMode: mode })
+    const sessions = await db.sessions.orderBy('startedAt').reverse().toArray()
+    setState({ status: 'ready', sessions })
   }, [])
 
   if (state.status === 'loading') {
@@ -82,19 +99,27 @@ export function AppShell() {
       </section>
 
       <section className="panel" aria-labelledby="modes-heading">
-        <h2 id="modes-heading">v1 mode strip (read-only placeholder)</h2>
+        <h2 id="modes-heading">v1 mode strip</h2>
         <ul className="mode-list" aria-label="V1 modes">
-          {SESSION_MODES_V1.map((mode) => (
-            <li key={mode}>
-              <span
-                className={
-                  mode === primary?.activeMode ? 'mode-pill active' : 'mode-pill'
-                }
-              >
-                {mode}
-              </span>
-            </li>
-          ))}
+          {SESSION_MODES_V1.map((mode) => {
+            const isActive = mode === primary?.activeMode
+            return (
+              <li key={mode}>
+                <button
+                  type="button"
+                  className={isActive ? 'mode-pill active' : 'mode-pill'}
+                  aria-pressed={isActive}
+                  disabled={!primary}
+                  onClick={() => {
+                    if (!primary || primary.activeMode === mode) return
+                    void selectMode(mode, primary.id)
+                  }}
+                >
+                  {mode}
+                </button>
+              </li>
+            )
+          })}
         </ul>
         <p className="muted fineprint">
           Socratic flows belong under Participation. Event packs per mode are
