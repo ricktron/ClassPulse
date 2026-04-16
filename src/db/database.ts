@@ -1,16 +1,23 @@
 import Dexie, { type EntityTable } from 'dexie'
+import type { ParticipationEvent } from '../domain/participation'
 import type { AppSettingRecord } from '../domain/settings'
 import type { SessionRecord } from '../domain/session'
 
 export class ClassPulseDB extends Dexie {
   sessions!: EntityTable<SessionRecord, 'id'>
   settings!: EntityTable<AppSettingRecord, 'key'>
+  participationEvents!: EntityTable<ParticipationEvent, 'id'>
 
   constructor() {
     super('classpulse')
     this.version(1).stores({
       sessions: 'id, startedAt',
       settings: 'key',
+    })
+    this.version(2).stores({
+      sessions: 'id, startedAt',
+      settings: 'key',
+      participationEvents: 'id, sessionId, createdAt',
     })
   }
 }
