@@ -20,14 +20,21 @@ describe('App shell', () => {
     expect(within(modeList).getByText('participation')).toBeInTheDocument()
   })
 
-  it('defaults active mode to participation for a fresh local store', async () => {
+  it('defaults active mode to participation when a new session is started', async () => {
     render(<App />)
-    const sessionHeading = await screen.findByRole('heading', { name: /session \(device-local\)/i })
+    // Fresh DB — no active session; start one explicitly.
+    fireEvent.click(await screen.findByRole('button', { name: /start session/i }))
+    // Wait for the session to become active (end-session button confirms it).
+    await screen.findByRole('button', { name: /end session/i })
+
+    const sessionHeading = screen.getByRole('heading', { name: /session \(device-local\)/i })
     const sessionSection = sessionHeading.closest('section') as HTMLElement
     expect(within(sessionSection).getByText('participation')).toBeInTheDocument()
-    const behavior = await screen.findByRole('button', { name: 'behavior' })
-    expect(behavior).toHaveAttribute('aria-pressed', 'false')
-    expect(await screen.findByRole('button', { name: 'participation' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'behavior' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+    expect(screen.getByRole('button', { name: 'participation' })).toHaveAttribute(
       'aria-pressed',
       'true',
     )
@@ -35,6 +42,10 @@ describe('App shell', () => {
 
   it('persists mode selection to Dexie and restores after remount', async () => {
     const { unmount } = render(<App />)
+    // Start a session before changing mode.
+    const startBtn = await screen.findByRole('button', { name: /start session/i })
+    fireEvent.click(startBtn)
+
     const sessionHeading = await screen.findByRole('heading', { name: /session \(device-local\)/i })
     const sessionSection = sessionHeading.closest('section') as HTMLElement
     const notesBtn = await screen.findByRole('button', { name: 'notes' })
