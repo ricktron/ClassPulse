@@ -17,14 +17,16 @@ Each slice should ship with:
 
 ## Suggested near-term slices
 
+Slices **1–4** are already represented in the current shell: persisted `activeMode`, explicit session lifecycle, participation quick capture, and behavior quick capture.
+
 | Slice | Focus | Notes |
 |-------|-------|-------|
-| **Slice 1** | Live mode navigation + persisted `activeMode` | Wire taps on the mode strip to Dexie updates; keep UI intentionally plain. |
-| **Slice 2** | Session lifecycle | Create/end session, session list, empty states. |
-| **Slice 3** | JSON export + confirmed import replace | Implement the v1 backup contract; still no merge. |
-| **Slice 4** | Event pack editor MVP | Teacher-editable packs per mode; versioning strategy documented before schema churn. |
+| **Slice 5** | JSON export + confirmed import replace | Implement the authoritative v1 backup contract. Export should be JSON; import should require confirmation and replace local data with no merge logic. |
+| **Slice 6** | Bathroom quick-capture MVP | Add the first concrete Bathroom mode surface while keeping the flow local-only and intentionally simple. |
+| **Slice 7** | Notes capture MVP | Add lightweight free-form session notes tied to the active session, without broad document tooling. |
+| **Slice 8** | Assessments shell MVP | Add the first assessment capture surface without introducing completion timestamps before v1.1. |
 
-The table is guidance, not a commitment order — adjust in `docs/PROJECT_STATUS.md` as reality changes.
+Teacher-editable event packs should follow after more of the fixed v1 modes have concrete capture surfaces in the product.
 
 ## Conflict handling
 
