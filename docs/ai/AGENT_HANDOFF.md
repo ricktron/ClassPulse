@@ -1,30 +1,30 @@
 # Agent handoff
 
 ---
-session_id: "classpulse-strategy-truth-20260416"
-session_label: "PM-upload session classpulse-strategy-truth-20260416"
-opened_at_utc: "2026-04-16T16:04:11Z"
-last_updated_utc: "2026-04-16T16:05:00Z"
-expires_at_utc: "2026-04-17T16:04:11Z"
+session_id: "classpulse-control-tower-20260416"
+session_label: "PM-upload session classpulse-control-tower-20260416"
+opened_at_utc: "2026-04-16T22:07:05Z"
+last_updated_utc: "2026-04-16T22:09:00Z"
+expires_at_utc: "2026-04-17T22:07:05Z"
 status: "active"
 project: "ClassPulse"
 task_scope: "single"
-included_task_slugs: "strategy-truth-closeout"
-task_slug: "strategy-truth-closeout"
+included_task_slugs: "control-tower-operating-pack"
+task_slug: "control-tower-operating-pack"
 runs_included: 1
-newest_receipt_included_at_utc: "2026-04-16T16:04:11Z"
+newest_receipt_included_at_utc: "2026-04-16T22:07:05Z"
 receipts_included_count: 1
-receipt_paths_included: "docs/ai/run_receipts/2026-04-16T160411Z--strategy-truth-closeout--e2b91c4a.md"
+receipt_paths_included: "docs/ai/run_receipts/2026-04-16T220705Z--control-tower-operating-pack--b4e8c91d.md"
 manual_reset: true
 ---
 
 ## Current objective
 
-Encode remaining ClassPulse strategy and process truths into authoritative repo docs after comparing the strategy baseline to existing `DECISIONS.md`, scope, architecture, status, slice plan, and startup checklist content.
+Document-only run: add a repo-native **Control Tower** orchestration workflow, compact templates for Control Tower opens and bounded slice kickoffs, and minimal pointers from startup checklist, slice plan, and project status.
 
 ## Current repo state
 
-Per receipt `docs/ai/run_receipts/2026-04-16T160411Z--strategy-truth-closeout--e2b91c4a.md`: product baseline for local-first shell, fixed modes, JSON backup contract in scope docs, and governance OS files were already largely present. This run added **D14** (next bounded backup slice = JSON export + confirmed import replace), clarified **D6** supersession vs sequencing, extended **D7** with the classroom-analytics rationale for deferred assessment completion timestamps, aligned **`docs/PROJECT_STATUS.md`** next focus and process posture (governance sufficiency, automation deferral, bounded slice chats, advisory external research, Control Tower readiness), strengthened **`docs/ai/AGENT_STARTUP_CHECKLIST.md`** with bounded-slice and research authority lines, and annotated **`docs/SLICE_PLAN.md`** Slice 5 as the locked next product slice.
+Per receipt `docs/ai/run_receipts/2026-04-16T220705Z--control-tower-operating-pack--b4e8c91d.md`: new file **`docs/WORKFLOWS/CONTROL_TOWER.md`** defines the Control Tower lane (orchestration, not coding), contrasts strategy / research / implementation, prescribes repo-first reconciliation, smallest-safe slice selection, research posture, and the seven-item report-back list for implementation chats. New templates **`docs/templates/SLICE_INTAKE_TEMPLATE.md`** and **`docs/templates/CONTROL_TOWER_CHECK_TEMPLATE.md`** support slice kickoff and Control Tower session opens. **`docs/ai/AGENT_STARTUP_CHECKLIST.md`** adds read-order item 14 for orchestration-only chats. **`docs/SLICE_PLAN.md`** links kickoff and Control Tower docs at the top. **`docs/PROJECT_STATUS.md`** last-updated line, Control Tower readiness sentence, and agent operating model list reference the new workflow. Prior strategy-truth alignment (receipt `2026-04-16T160411Z--strategy-truth-closeout--e2b91c4a.md`) remains on disk; this handoff window is keyed to the Control Tower pack receipt only.
 
 ## Open risks / blockers
 
@@ -32,10 +32,9 @@ None recorded on the receipt for this run.
 
 ## Receipt coverage (this rebuild)
 
-- **Window anchor:** `2026-04-16T16:04:11Z` — `docs/ai/run_receipts/2026-04-16T160411Z--strategy-truth-closeout--e2b91c4a.md`
-- **Active session:** `handoff_session_id` `classpulse-strategy-truth-20260416`
+- **Window anchor:** `2026-04-16T22:07:05Z` — `docs/ai/run_receipts/2026-04-16T220705Z--control-tower-operating-pack--b4e8c91d.md`
+- **Active session:** `handoff_session_id` `classpulse-control-tower-20260416`
 - **Included:** 1 receipt (see frontmatter `receipt_paths_included`).
-- **Prior window note:** an earlier handoff window documented `foundation-truth-alignment`; this rebuild starts a new window keyed to the strategy-truth-closeout receipt.
 
 ## Runs included
 
@@ -43,15 +42,15 @@ None recorded on the receipt for this run.
 
 #### Task slug
 
-strategy-truth-closeout
+control-tower-operating-pack
 
 #### Prompt intent
 
-ClassPulse-bounded strategy-truth closeout: inspect repo guidance, encode missing durable truths with minimal doc edits, avoid duplicate process prose, update status/posture, create receipt and rebuild handoff, report files and verification.
+ClassPulse slice intake: encode Control Tower operating model in repo guidance; lane boundaries; slice report-back; repo truth over chat; templates; minimal pointer updates; receipt and handoff; verification.
 
 #### Cursor outcome
 
-Shipped — documentation-only alignment and process posture capture; no application feature changes.
+Shipped — documentation and templates only; no application feature changes.
 
 #### Files read
 
@@ -83,6 +82,7 @@ See receipt **raw_mirror** section.
 
 ## PM-ready summary
 
-- Checked-in strategy baseline for ClassPulse local-first shell, v1 scope boundaries, and JSON backup semantics were already strong; this run mainly closed gaps between **long-term optional Google durability naming (D10)** and **execution ordering** for the next backup slice (**D14** / Slice 5).  
-- Process posture now states governance parity is sufficient, optional automation stays deferred, new work prefers bounded slice chats, external research stays non-authoritative until distilled, and a Control Tower orchestration chat is considered ready when the operator runs it.  
+- A single workflow document now describes **Control Tower** as orchestration-only, links implementation discipline to existing habits and runbooks, and lists what bounded implementation chats should return for continuity.  
+- **Slice kickoff** and **Control Tower opening** templates live under `docs/templates/`; **no separate** `RESEARCH_LANE.md` was added — research rules sit inside the Control Tower doc to avoid duplicate process prose.  
+- **Startup checklist**, **slice plan**, and **project status** include small links so future sessions can find the pack without rereading strategy chat exports.  
 - One immutable receipt records the run; this handoff was manually rebuilt from that receipt.

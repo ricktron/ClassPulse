@@ -1,5 +1,7 @@
 # Slice plan — how bounded work lands
 
+**Kickoff:** bounded implementation chats may start from [`docs/templates/SLICE_INTAKE_TEMPLATE.md`](templates/SLICE_INTAKE_TEMPLATE.md). **Orchestration:** [`docs/WORKFLOWS/CONTROL_TOWER.md`](WORKFLOWS/CONTROL_TOWER.md).
+
 ## Intent
 
 ClassPulse evolves through **small, verifiable slices** rather than open-ended refactors. Each slice should leave the repo **healthier**: docs, tests, and scripts stay truthful.

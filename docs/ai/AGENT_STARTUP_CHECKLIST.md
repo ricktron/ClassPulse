@@ -17,6 +17,7 @@
 11. [`docs/ai/AI_FAILURE_TAXONOMY.md`](AI_FAILURE_TAXONOMY.md) — shared miss vocabulary (link-out in narrative)  
 12. [`docs/RUNBOOK_SanityChecks.md`](../RUNBOOK_SanityChecks.md) — default verification loop for this codebase  
 13. [`docs/SLICE_PLAN.md`](../SLICE_PLAN.md) — bounded implementation slices  
+14. **Orchestration-only chats:** [`docs/WORKFLOWS/CONTROL_TOWER.md`](../WORKFLOWS/CONTROL_TOWER.md) — Control Tower lane (pick/confirm next slice; not coding)  
 
 Optional **non-authoritative** reference material: [`starter_repo/`](../../starter_repo/) (generic seed only; do not treat as ClassPulse product or governance source of truth).
 

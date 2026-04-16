@@ -1,6 +1,6 @@
 # Project status
 
-**Last updated:** 2026-04-16 (strategy-truth closeout doc pass)  
+**Last updated:** 2026-04-16 (Control Tower operating pack)  
 **Phase:** Bootstrap complete. The local-first foundation shell is already beyond pure scaffold status: **Slice 1** (persisted shell `activeMode`), **Slice 2** (explicit session lifecycle), **Slice 3** (participation quick capture), and **Slice 4** (behavior quick capture) are shipped. **Governance parity lane:** repo-native agent OS (startup checklist, closeout, receipts / handoff, sanity runbook, journal) landed separately — see `docs/ai/` and `docs/WORKFLOWS/`.
 
 ## What exists today
@@ -49,7 +49,7 @@
 
 Take **Slice 5 — JSON export + confirmed import replace** as the **next bounded product slice** (see `docs/SLICE_PLAN.md` and `DECISIONS.md` D14). Optional **Google-connected backup/export** remains the named longer-term durability layer (`DECISIONS.md` D10) and lands **after** that JSON slice without changing v1 replace semantics.
 
-The project is **ready for a separate Control Tower orchestration chat** when the operator wants it; **implementation lanes still follow checked-in repo truth**, not chat memory.
+The project is **ready for a separate Control Tower orchestration chat** when the operator wants it; **implementation lanes still follow checked-in repo truth**, not chat memory. Links live under **Agent operating model** below.
 
 ## Process posture (strategy alignment)
 
@@ -61,6 +61,7 @@ The project is **ready for a separate Control Tower orchestration chat** when th
 ## Agent operating model (repo-native)
 
 - **Startup:** [`docs/ai/AGENT_STARTUP_CHECKLIST.md`](ai/AGENT_STARTUP_CHECKLIST.md)  
+- **Control Tower (orchestration):** [`docs/WORKFLOWS/CONTROL_TOWER.md`](WORKFLOWS/CONTROL_TOWER.md) · opening checklist [`docs/templates/CONTROL_TOWER_CHECK_TEMPLATE.md`](templates/CONTROL_TOWER_CHECK_TEMPLATE.md)  
 - **Closeout:** [`docs/WORKFLOWS/POST_CHAT_CLOSEOUT.md`](WORKFLOWS/POST_CHAT_CLOSEOUT.md)  
 - **Handoff / receipts:** [`docs/WORKFLOWS/AGENT_HANDOFF_STANDARD.md`](WORKFLOWS/AGENT_HANDOFF_STANDARD.md), [`docs/ai/AGENT_HANDOFF.md`](ai/AGENT_HANDOFF.md), [`docs/ai/run_receipts/`](ai/run_receipts/)  
 - **Verification defaults:** [`docs/RUNBOOK_SanityChecks.md`](RUNBOOK_SanityChecks.md)  
