@@ -20,19 +20,34 @@
 - Vitest coverage exists across the app shell, session lifecycle/domain helpers, database helpers, and participation / behavior event flows.  
 - GitHub Actions workflow runs install, typecheck, lint, test, and build.
 
+## Locked product guidance baseline
+
+- Canonical v1 guidance now lives in:
+  - `docs/contracts/classpulse_v1_data_model_and_session_lifecycle.md`
+  - `docs/contracts/classpulse_v1_event_tag_contract.md`
+- These contracts lock the current planning baseline:
+  - local save without required login
+  - optional Google-connected backup/export
+  - session-first data model
+  - explicit session closure
+  - backgrounding as checkpoint only
+  - small fixed starter event/tag vocabulary
+- The currently shipped shell predates parts of that contract baseline in one important way: it still persists separate `participationEvents` and `behaviorEvents`. Future slices should converge toward the canonical contract rather than treating the current split as final.
+
 ## What is intentionally not built yet
 
-- JSON import/export flows.  
+- Google-connected backup/export flows or OAuth.  
+- Restore/import flows aligned to the new contract baseline.  
+- Class/course roster model aligned to the new contract baseline.  
 - Bathroom, Notes, and Assessments capture surfaces beyond the mode strip placeholders.  
 - Teacher-editable event pack editor.  
-- Google Workspace backup or OAuth.  
 - Reports, analytics, transcripts, and hall-pass integrations.  
 - Assessment completion timestamps (scheduled post-true-v1 per `DECISIONS.md` D7).  
 - Session list / multi-session dashboard.
 
 ## Next focus
 
-**Slice 5** — JSON export + confirmed import replace: implement the v1 backup contract so the local-first promise has a teacher-usable recovery path.
+Lock the remaining high-leverage product seams before new implementation resumes, then take the first bounded backup/export slice that honors the canonical local-first + optional Google backup contract.
 
 ## Agent operating model (repo-native)
 
