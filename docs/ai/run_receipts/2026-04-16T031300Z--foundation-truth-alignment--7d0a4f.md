@@ -57,6 +57,10 @@ shipped
 - docs/PRIVACY_DATA_HANDLING.md
 - docs/SLICE_PLAN.md
 - docs/PROJECT_STATUS.md
+- DECISIONS.md
+- docs/ai/AGENT_HANDOFF.md
+- docs/WORKFLOWS/AGENT_HANDOFF_STANDARD.md
+- docs/templates/AGENT_HANDOFF_TEMPLATE.md
 - .github/workflows/ci.yml
 - src/main.tsx
 - src/App.tsx
@@ -79,11 +83,11 @@ shipped
 
 ## Derived handoff rebuild
 
-Skipped in this run. Receipt was added, but `docs/ai/AGENT_HANDOFF.md` was not manually rebuilt in-session.
+Manual rebuild completed during post-chat closeout. `docs/ai/AGENT_HANDOFF.md` was updated to the `classpulse-foundation` session using this receipt as the active source of truth.
 
 ## Handoff inclusion result
 
-pending_rebuild
+included
 
 ## Verification run
 
@@ -105,7 +109,7 @@ pending
 
 ## Rollback
 
-Revert the four doc commits and remove this receipt file.
+Revert the four documentation updates from this run, rebuild `docs/ai/AGENT_HANDOFF.md` from the prior active receipt window if needed, and remove this receipt file if the entire run is being undone.
 
 ## unresolved_status
 
@@ -113,8 +117,8 @@ Local command verification (`npm install`, `npm run typecheck`, `npm run lint`, 
 
 ## raw_mirror
 
-Inspected repo truth through the GitHub connector after confirming no local checkout was present. Found that the minimal foundation requested by the slice already existed and that the runtime had advanced beyond pure scaffold state. Updated architecture, privacy, status, and slice-plan docs to match the current code and created an immutable receipt.
+Inspected repo truth through the GitHub connector after confirming no local checkout was present. Found that the minimal foundation requested by the slice already existed and that the runtime had advanced beyond pure scaffold state. Updated architecture, privacy, status, and slice-plan docs to match the current code, then completed post-chat closeout by rebuilding the derived handoff for the active foundation session.
 
 ## pm_summary_snippet
 
-The ClassPulse repository already contained the local-first app scaffold, Dexie foundation, PWA baseline, and a working shell with session lifecycle plus participation and behavior capture. This run aligned repo docs with the code and set JSON export/import replace as the next bounded slice. 
+The ClassPulse repository already contained the local-first app scaffold, Dexie foundation, PWA baseline, and a working shell with session lifecycle plus participation and behavior capture. This run aligned repo docs with the code, rebuilt the derived handoff for the current session, and set JSON export/import replace as the next bounded slice. 
