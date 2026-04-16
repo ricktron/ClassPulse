@@ -1,6 +1,6 @@
 # ClassPulse
 
-Local-first classroom observation and participation notebook for teachers. This repository is the **ClassPulse** app and product docs; an optional **starter_repo/** tree preserves generic Forge-style operating workflows for reuse.
+Local-first classroom observation and participation notebook for teachers. This repository is the **ClassPulse** app and product docs. **Repo-native** agent workflows live under [`docs/ai/`](docs/ai/) and [`docs/WORKFLOWS/`](docs/WORKFLOWS/) (see [`AGENTS.md`](AGENTS.md)). An optional [`starter_repo/`](starter_repo/) tree preserves a generic seed library for reuse and is **not** the operating source of truth for ClassPulse.
 
 ## Quick start
 
@@ -28,13 +28,13 @@ npm run dev
 4. [`DECISIONS.md`](DECISIONS.md) — durable commitments.  
 5. [`docs/SLICE_PLAN.md`](docs/SLICE_PLAN.md) — how bounded implementation chats should land.
 
-Human/agent rules: [`AGENTS.md`](AGENTS.md). Current status: [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md).
+Human/agent rules: [`AGENTS.md`](AGENTS.md). Startup order: [`docs/ai/AGENT_STARTUP_CHECKLIST.md`](docs/ai/AGENT_STARTUP_CHECKLIST.md). Current status: [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md). Verification defaults: [`docs/RUNBOOK_SanityChecks.md`](docs/RUNBOOK_SanityChecks.md).
 
 ## PWA notes
 
 - `vite-plugin-pwa` generates the service worker on **`npm run build`** (disabled in dev by default).  
 - Install surfaces on iPad Safari benefit from future dedicated PNG touch icons; the manifest currently references `favicon.svg` as a deliberate lightweight baseline.
 
-## Starter seed
+## Starter seed (optional)
 
-[`starter_repo/`](starter_repo/) is a non-authoritative **optional** process library copied from Project Forge. ClassPulse product truth lives under `docs/` and `DECISIONS.md` at the repository root.
+[`starter_repo/`](starter_repo/) is a non-authoritative **optional** copy of generic starter material. ClassPulse **product and governance** truth lives under `docs/`, `docs/ai/`, `docs/WORKFLOWS/`, and `DECISIONS.md` at the repository root.

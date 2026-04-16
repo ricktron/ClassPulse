@@ -1,7 +1,7 @@
 # Project status
 
-**Last updated:** 2026-04-16  
-**Phase:** Bootstrap complete; **Slice 1** (persisted shell `activeMode`) shipped; **Slice 2** (explicit session lifecycle) shipped.
+**Last updated:** 2026-04-15  
+**Phase:** Bootstrap complete; **Slice 1** (persisted shell `activeMode`) shipped; **Slice 2** (explicit session lifecycle) shipped. **Governance parity lane:** repo-native agent OS (startup checklist, closeout, receipts / handoff, sanity runbook, journal) landed — see `docs/ai/` and `docs/WORKFLOWS/`.
 
 ## What exists today
 
@@ -14,7 +14,7 @@
 - Teacher can **end the active session** (sets `endedAt`; shell returns to empty state).  
 - Mode strip is **disabled** when there is no active session.  
 - PWA manifest + Workbox service worker emitted on **`npm run build`**.  
-- Vitest tests: 17 passing across 3 files — UI shell, session lifecycle + domain helpers, database initialization.  
+- Vitest tests: 35 passing across 7 files — UI shell, session lifecycle + domain helpers, database initialization, and additional coverage as the tree grows.  
 - GitHub Actions workflow running install, typecheck, lint, test, and build.
 
 ## What is intentionally not built yet
@@ -30,6 +30,14 @@
 
 **Slice 3** — JSON export + confirmed import replace: implement the v1 backup contract (see [`docs/SLICE_PLAN.md`](SLICE_PLAN.md)).
 
+## Agent operating model (repo-native)
+
+- **Startup:** [`docs/ai/AGENT_STARTUP_CHECKLIST.md`](ai/AGENT_STARTUP_CHECKLIST.md)  
+- **Closeout:** [`docs/WORKFLOWS/POST_CHAT_CLOSEOUT.md`](WORKFLOWS/POST_CHAT_CLOSEOUT.md)  
+- **Handoff / receipts:** [`docs/WORKFLOWS/AGENT_HANDOFF_STANDARD.md`](WORKFLOWS/AGENT_HANDOFF_STANDARD.md), [`docs/ai/AGENT_HANDOFF.md`](ai/AGENT_HANDOFF.md), [`docs/ai/run_receipts/`](ai/run_receipts/)  
+- **Verification defaults:** [`docs/RUNBOOK_SanityChecks.md`](RUNBOOK_SanityChecks.md)  
+- **Process journal (optional):** [`docs/AI_DEV_JOURNAL.md`](AI_DEV_JOURNAL.md)
+
 ## Optional references
 
-Generic AI/process docs live under [`starter_repo/`](../starter_repo/) and are **non-authoritative** for ClassPulse product decisions.
+[`starter_repo/`](../starter_repo/) remains an **optional**, **non-authoritative** seed library — not the ClassPulse operating source of truth.
