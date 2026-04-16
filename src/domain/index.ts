@@ -1,3 +1,4 @@
+export * from './behavior'
 export * from './modes'
 export * from './participation'
 export * from './session'

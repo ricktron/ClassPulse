@@ -45,10 +45,12 @@ describe('App shell', () => {
     // Start a session before changing mode.
     const startBtn = await screen.findByRole('button', { name: /start session/i })
     fireEvent.click(startBtn)
+    // Wait for the session to become active before interacting with mode buttons.
+    await screen.findByRole('button', { name: /end session/i })
 
-    const sessionHeading = await screen.findByRole('heading', { name: /session \(device-local\)/i })
+    const sessionHeading = screen.getByRole('heading', { name: /session \(device-local\)/i })
     const sessionSection = sessionHeading.closest('section') as HTMLElement
-    const notesBtn = await screen.findByRole('button', { name: 'notes' })
+    const notesBtn = screen.getByRole('button', { name: 'notes' })
     fireEvent.click(notesBtn)
     expect(await within(sessionSection).findByText('notes')).toBeInTheDocument()
     expect(await screen.findByRole('button', { name: 'notes' })).toHaveAttribute('aria-pressed', 'true')
