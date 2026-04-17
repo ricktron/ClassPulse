@@ -9,6 +9,7 @@ import { resolveActiveSession } from '../../domain/session'
 import { getDatabase } from '../../db/database'
 import { BathroomPanel } from '../bathroom/BathroomPanel'
 import { BehaviorPanel } from '../behavior/BehaviorPanel'
+import { NotesPanel } from '../notes/NotesPanel'
 import { ParticipationPanel } from '../participation/ParticipationPanel'
 import { LocalBackupPanel } from './LocalBackupPanel'
 import { loadShellReadySnapshot } from './load-shell-state'
@@ -136,6 +137,18 @@ export function AppShell() {
     setState((prev) => (prev.status === 'ready' ? { ...prev, behaviorEvents: events } : prev))
   }, [])
 
+  const persistSessionNotes = useCallback(async (sessionId: string, sessionNotes: string) => {
+    const db = await getDatabase()
+    await db.sessions.update(sessionId, { sessionNotes })
+    setState((prev) => {
+      if (prev.status !== 'ready') return prev
+      return {
+        ...prev,
+        sessions: prev.sessions.map((s) => (s.id === sessionId ? { ...s, sessionNotes } : s)),
+      }
+    })
+  }, [])
+
   const captureBathroom = useCallback(async (sessionId: string, kind: BathroomEventKind) => {
     const db = await getDatabase()
     const event: BathroomEvent = {
@@ -259,6 +272,14 @@ export function AppShell() {
         events={state.bathroomEvents}
         onCapture={(kind) => {
           if (active) void captureBathroom(active.id, kind)
+        }}
+      />
+
+      <NotesPanel
+        sessionId={active?.id}
+        sessionNotes={active?.sessionNotes ?? ''}
+        onPersist={(text) => {
+          if (active) void persistSessionNotes(active.id, text)
         }}
       />
     </main>

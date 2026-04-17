@@ -56,7 +56,7 @@ function requireOptionalIsoString(value: unknown, label: string): string | undef
   return value
 }
 
-const SESSION_KEYS = new Set(['id', 'title', 'startedAt', 'endedAt', 'activeMode'])
+const SESSION_KEYS = new Set(['id', 'title', 'startedAt', 'endedAt', 'activeMode', 'sessionNotes'])
 const PARTICIPATION_KEYS = new Set(['id', 'sessionId', 'createdAt'])
 const BEHAVIOR_KEYS = new Set(['id', 'sessionId', 'createdAt', 'kind'])
 const BATHROOM_KEYS = new Set(['id', 'sessionId', 'createdAt', 'kind'])
@@ -79,8 +79,10 @@ function parseSession(raw: unknown, index: number): SessionRecord {
   if (typeof activeModeRaw !== 'string' || !isSessionModeV1(activeModeRaw)) {
     assertBackupValidationError(`sessions[${index}].activeMode is not a valid v1 mode`)
   }
+  const sessionNotes = requireOptionalIsoString(raw.sessionNotes, `sessions[${index}].sessionNotes`)
   const out: SessionRecord = { id, title, startedAt, activeMode: activeModeRaw }
   if (endedAt !== undefined) out.endedAt = endedAt
+  if (sessionNotes !== undefined) out.sessionNotes = sessionNotes
   return out
 }
 

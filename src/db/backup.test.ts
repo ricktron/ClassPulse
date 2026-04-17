@@ -270,6 +270,60 @@ describe('local JSON backup', () => {
     ).toThrow(/bathroomEvents\[0\]\.kind/)
   })
 
+  it('accepts optional sessionNotes on sessions and round-trips through parse', () => {
+    const envelope = {
+      format: CLASSPULSE_LOCAL_BACKUP_FORMAT,
+      formatVersion: CLASSPULSE_LOCAL_BACKUP_FORMAT_VERSION,
+      exportedAt: '2026-04-17T12:00:00.000Z',
+      dexieSchemaVersion: CLASSPULSE_DEXIE_SCHEMA_VERSION,
+      data: {
+        sessions: [
+          {
+            id: 's-notes',
+            title: 'With notes',
+            startedAt: '2026-04-17T10:00:00.000Z',
+            activeMode: 'notes' as const,
+            sessionNotes: 'Line one\nLine two',
+          },
+        ],
+        settings: [],
+        participationEvents: [],
+        behaviorEvents: [],
+        bathroomEvents: [],
+      },
+    }
+    const validated = parseAndValidateLocalBackupJson(JSON.stringify(envelope))
+    expect(validated.sessions[0].sessionNotes).toBe('Line one\nLine two')
+  })
+
+  it('rejects non-string sessionNotes on sessions', () => {
+    expect(() =>
+      parseAndValidateLocalBackupJson(
+        JSON.stringify({
+          format: CLASSPULSE_LOCAL_BACKUP_FORMAT,
+          formatVersion: CLASSPULSE_LOCAL_BACKUP_FORMAT_VERSION,
+          exportedAt: '2026-04-17T12:00:00.000Z',
+          dexieSchemaVersion: CLASSPULSE_DEXIE_SCHEMA_VERSION,
+          data: {
+            sessions: [
+              {
+                id: 's1',
+                title: 'T',
+                startedAt: '2026-04-17T10:00:00.000Z',
+                activeMode: 'participation',
+                sessionNotes: 99,
+              },
+            ],
+            settings: [],
+            participationEvents: [],
+            behaviorEvents: [],
+            bathroomEvents: [],
+          },
+        }),
+      ),
+    ).toThrow(/sessionNotes/)
+  })
+
   it('readBackupTablesFromDb matches post-replace Dexie contents', async () => {
     const db = new ClassPulseDB()
     await db.open()

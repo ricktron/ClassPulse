@@ -15,6 +15,11 @@ export interface SessionRecord {
    * Persisted in Dexie; the mode strip reads and updates this field only — no separate settings row.
    */
   activeMode: SessionModeV1
+  /**
+   * Teacher free-form notes for this session (Slice 7). Device-local; included in JSON backup.
+   * Optional so older rows and imports without this field remain valid.
+   */
+  sessionNotes?: string
 }
 
 /** A session is active when it has not been explicitly ended by the teacher. */

@@ -65,4 +65,21 @@ describe('App shell', () => {
       'true',
     )
   })
+
+  it('persists session notes locally across remount', async () => {
+    const { unmount } = render(<App />)
+    fireEvent.click(await screen.findByRole('button', { name: /start session/i }))
+    await screen.findByRole('button', { name: /end session/i })
+
+    const notesBox = await screen.findByRole('textbox', { name: 'Notes' })
+    fireEvent.change(notesBox, { target: { value: 'Permission slips due Friday' } })
+    fireEvent.blur(notesBox)
+
+    unmount()
+    render(<App />)
+    await screen.findByRole('button', { name: /end session/i })
+    expect(await screen.findByRole('textbox', { name: 'Notes' })).toHaveValue(
+      'Permission slips due Friday',
+    )
+  })
 })

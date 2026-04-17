@@ -165,3 +165,23 @@ button.mode-pill:focus-visible {
   font-size: 0.9rem;
   color: var(--muted);
 }
+
+.notes-textarea {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: 0.6rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font: inherit;
+  line-height: 1.45;
+  color: inherit;
+  background: var(--surface);
+  resize: vertical;
+  min-height: 7.5rem;
+}
+
+.notes-textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
