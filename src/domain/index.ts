@@ -1,3 +1,5 @@
+export * from './assessment'
+export * from './bathroom'
 export * from './behavior'
 export * from './modes'
 export * from './participation'

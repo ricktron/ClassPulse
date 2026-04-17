@@ -1,4 +1,5 @@
 import { getDatabase } from '../../db/database'
+import type { AssessmentEvent } from '../../domain/assessment'
 import type { BathroomEvent } from '../../domain/bathroom'
 import type { BehaviorEvent } from '../../domain/behavior'
 import type { ParticipationEvent } from '../../domain/participation'
@@ -10,6 +11,7 @@ export type ShellReadySnapshot = {
   participationEvents: ParticipationEvent[]
   behaviorEvents: BehaviorEvent[]
   bathroomEvents: BathroomEvent[]
+  assessmentEvents: AssessmentEvent[]
 }
 
 /**
@@ -35,5 +37,10 @@ export async function loadShellReadySnapshot(): Promise<ShellReadySnapshot> {
         b.createdAt.localeCompare(a.createdAt),
       )
     : []
-  return { sessions, participationEvents, behaviorEvents, bathroomEvents }
+  const assessmentEvents = active
+    ? (await db.assessmentEvents.where('sessionId').equals(active.id).toArray()).sort((a, b) =>
+        b.createdAt.localeCompare(a.createdAt),
+      )
+    : []
+  return { sessions, participationEvents, behaviorEvents, bathroomEvents, assessmentEvents }
 }

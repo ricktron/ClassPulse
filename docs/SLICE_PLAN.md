@@ -26,7 +26,7 @@ Slices **1–4** are already represented in the current shell: persisted `active
 | **Slice 5** | JSON export + confirmed import replace | **Shipped:** JSON export + confirmation-gated replace import, no merge (`DECISIONS.md` D14). Optional Google backup/export follows later (D10). |
 | **Slice 6** | Bathroom quick-capture MVP | **Shipped:** `BathroomPanel` with Out/Back captures, Dexie `bathroomEvents`, JSON backup/import parity (schema v4). |
 | **Slice 7** | Notes capture MVP | **Shipped:** optional `sessionNotes` on `SessionRecord`, `NotesPanel` textarea with debounced local save, JSON backup/import parity (Dexie schema still v4). |
-| **Slice 8** | Assessments shell MVP | Add the first assessment capture surface without introducing completion timestamps before v1.1. |
+| **Slice 8** | Assessments shell MVP | **Shipped:** `AssessmentsPanel` with `+ Got it` / `+ Needs reteach` captures, Dexie `assessmentEvents` (schema v5), JSON backup/import parity. No completion timestamps (per `DECISIONS.md` D7). |
 
 Teacher-editable event packs should follow after more of the fixed v1 modes have concrete capture surfaces in the product.
 

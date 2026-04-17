@@ -1,3 +1,4 @@
+import type { AssessmentEvent, AssessmentEventKind } from '../domain/assessment'
 import type { BathroomEvent, BathroomEventKind } from '../domain/bathroom'
 import type { BehaviorEvent, BehaviorEventKind } from '../domain/behavior'
 import { isSessionModeV1 } from '../domain/modes'
@@ -21,6 +22,7 @@ export type ClassPulseLocalBackupTables = {
   participationEvents: ParticipationEvent[]
   behaviorEvents: BehaviorEvent[]
   bathroomEvents: BathroomEvent[]
+  assessmentEvents: AssessmentEvent[]
 }
 
 export type ClassPulseLocalBackupFileV1 = {
@@ -60,6 +62,7 @@ const SESSION_KEYS = new Set(['id', 'title', 'startedAt', 'endedAt', 'activeMode
 const PARTICIPATION_KEYS = new Set(['id', 'sessionId', 'createdAt'])
 const BEHAVIOR_KEYS = new Set(['id', 'sessionId', 'createdAt', 'kind'])
 const BATHROOM_KEYS = new Set(['id', 'sessionId', 'createdAt', 'kind'])
+const ASSESSMENT_KEYS = new Set(['id', 'sessionId', 'createdAt', 'kind'])
 const SETTINGS_KEYS = new Set(['key', 'value'])
 
 function assertNoExtraKeys(obj: Record<string, unknown>, allowed: Set<string>, label: string): void {
@@ -98,6 +101,7 @@ function parseParticipation(raw: unknown, index: number): ParticipationEvent {
 
 const BEHAVIOR_KINDS: BehaviorEventKind[] = ['positive', 'redirect']
 const BATHROOM_KINDS: BathroomEventKind[] = ['depart', 'return']
+const ASSESSMENT_KINDS: AssessmentEventKind[] = ['check_pass', 'check_fail']
 
 function parseBehavior(raw: unknown, index: number): BehaviorEvent {
   if (!isPlainObject(raw)) assertBackupValidationError(`behaviorEvents[${index}] must be an object`)
@@ -129,6 +133,21 @@ function parseBathroom(raw: unknown, index: number): BathroomEvent {
   }
 }
 
+function parseAssessment(raw: unknown, index: number): AssessmentEvent {
+  if (!isPlainObject(raw)) assertBackupValidationError(`assessmentEvents[${index}] must be an object`)
+  assertNoExtraKeys(raw, ASSESSMENT_KEYS, `assessmentEvents[${index}]`)
+  const kind = raw.kind
+  if (typeof kind !== 'string' || !ASSESSMENT_KINDS.includes(kind as AssessmentEventKind)) {
+    assertBackupValidationError(`assessmentEvents[${index}].kind must be "check_pass" or "check_fail"`)
+  }
+  return {
+    id: requireString(raw.id, `assessmentEvents[${index}].id`),
+    sessionId: requireString(raw.sessionId, `assessmentEvents[${index}].sessionId`),
+    createdAt: requireString(raw.createdAt, `assessmentEvents[${index}].createdAt`),
+    kind: kind as AssessmentEventKind,
+  }
+}
+
 function parseSetting(raw: unknown, index: number): AppSettingRecord {
   if (!isPlainObject(raw)) assertBackupValidationError(`settings[${index}] must be an object`)
   assertNoExtraKeys(raw, SETTINGS_KEYS, `settings[${index}]`)
@@ -154,6 +173,7 @@ function validateForeignKeys(
   participationEvents: ParticipationEvent[],
   behaviorEvents: BehaviorEvent[],
   bathroomEvents: BathroomEvent[],
+  assessmentEvents: AssessmentEvent[],
 ): void {
   const sessionIds = new Set(sessions.map((s) => s.id))
   for (let i = 0; i < participationEvents.length; i++) {
@@ -176,20 +196,43 @@ function validateForeignKeys(
       assertBackupValidationError(`bathroomEvents[${i}].sessionId "${sid}" does not match any session id`)
     }
   }
+  for (let i = 0; i < assessmentEvents.length; i++) {
+    const sid = assessmentEvents[i].sessionId
+    if (!sessionIds.has(sid)) {
+      assertBackupValidationError(
+        `assessmentEvents[${i}].sessionId "${sid}" does not match any session id`,
+      )
+    }
+  }
 }
 
 /**
  * Reads all shipped capture tables into the backup payload shape (no envelope).
  */
 export async function readBackupTablesFromDb(db: ClassPulseDB): Promise<ClassPulseLocalBackupTables> {
-  const [sessions, settings, participationEvents, behaviorEvents, bathroomEvents] = await Promise.all([
+  const [
+    sessions,
+    settings,
+    participationEvents,
+    behaviorEvents,
+    bathroomEvents,
+    assessmentEvents,
+  ] = await Promise.all([
     db.sessions.toArray(),
     db.settings.toArray(),
     db.participationEvents.toArray(),
     db.behaviorEvents.toArray(),
     db.bathroomEvents.toArray(),
+    db.assessmentEvents.toArray(),
   ])
-  return { sessions, settings, participationEvents, behaviorEvents, bathroomEvents }
+  return {
+    sessions,
+    settings,
+    participationEvents,
+    behaviorEvents,
+    bathroomEvents,
+    assessmentEvents,
+  }
 }
 
 export async function buildLocalBackupFile(db: ClassPulseDB): Promise<ClassPulseLocalBackupFileV1> {
@@ -244,12 +287,20 @@ export function parseAndValidateLocalBackupJson(jsonText: string): ClassPulseLoc
     'participationEvents',
     'behaviorEvents',
     'bathroomEvents',
+    'assessmentEvents',
   ] as const) {
     if (!Array.isArray(data[key])) assertBackupValidationError(`data.${key} must be an array`)
   }
   assertNoExtraKeys(
     data,
-    new Set(['sessions', 'settings', 'participationEvents', 'behaviorEvents', 'bathroomEvents']),
+    new Set([
+      'sessions',
+      'settings',
+      'participationEvents',
+      'behaviorEvents',
+      'bathroomEvents',
+      'assessmentEvents',
+    ]),
     'data',
   )
 
@@ -260,20 +311,31 @@ export function parseAndValidateLocalBackupJson(jsonText: string): ClassPulseLoc
   )
   const behaviorEvents = (data.behaviorEvents as unknown[]).map((row, i) => parseBehavior(row, i))
   const bathroomEvents = (data.bathroomEvents as unknown[]).map((row, i) => parseBathroom(row, i))
+  const assessmentEvents = (data.assessmentEvents as unknown[]).map((row, i) =>
+    parseAssessment(row, i),
+  )
 
   assertUniqueIds(sessions, 'sessions')
   assertUniqueIds(participationEvents, 'participationEvents')
   assertUniqueIds(behaviorEvents, 'behaviorEvents')
   assertUniqueIds(bathroomEvents, 'bathroomEvents')
+  assertUniqueIds(assessmentEvents, 'assessmentEvents')
   const settingKeys = new Set<string>()
   for (const s of settings) {
     if (settingKeys.has(s.key)) assertBackupValidationError(`Duplicate settings key "${s.key}"`)
     settingKeys.add(s.key)
   }
 
-  validateForeignKeys(sessions, participationEvents, behaviorEvents, bathroomEvents)
+  validateForeignKeys(sessions, participationEvents, behaviorEvents, bathroomEvents, assessmentEvents)
 
-  return { sessions, settings, participationEvents, behaviorEvents, bathroomEvents }
+  return {
+    sessions,
+    settings,
+    participationEvents,
+    behaviorEvents,
+    bathroomEvents,
+    assessmentEvents,
+  }
 }
 
 /**
@@ -286,19 +348,28 @@ export async function replaceLocalDatabaseFromBackupTables(
 ): Promise<void> {
   await db.transaction(
     'rw',
-    [db.sessions, db.settings, db.participationEvents, db.behaviorEvents, db.bathroomEvents],
+    [
+      db.sessions,
+      db.settings,
+      db.participationEvents,
+      db.behaviorEvents,
+      db.bathroomEvents,
+      db.assessmentEvents,
+    ],
     async () => {
       await db.sessions.clear()
       await db.settings.clear()
       await db.participationEvents.clear()
       await db.behaviorEvents.clear()
       await db.bathroomEvents.clear()
+      await db.assessmentEvents.clear()
       if (tables.sessions.length) await db.sessions.bulkPut(tables.sessions)
       if (tables.settings.length) await db.settings.bulkPut(tables.settings)
       if (tables.participationEvents.length)
         await db.participationEvents.bulkPut(tables.participationEvents)
       if (tables.behaviorEvents.length) await db.behaviorEvents.bulkPut(tables.behaviorEvents)
       if (tables.bathroomEvents.length) await db.bathroomEvents.bulkPut(tables.bathroomEvents)
+      if (tables.assessmentEvents.length) await db.assessmentEvents.bulkPut(tables.assessmentEvents)
     },
   )
 }

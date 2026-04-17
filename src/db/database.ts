@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie'
+import type { AssessmentEvent } from '../domain/assessment'
 import type { BathroomEvent } from '../domain/bathroom'
 import type { BehaviorEvent } from '../domain/behavior'
 import type { ParticipationEvent } from '../domain/participation'
@@ -6,7 +7,7 @@ import type { AppSettingRecord } from '../domain/settings'
 import type { SessionRecord } from '../domain/session'
 
 /** Current Dexie schema version (bump when `stores` change). Used by JSON backup metadata. */
-export const CLASSPULSE_DEXIE_SCHEMA_VERSION = 4 as const
+export const CLASSPULSE_DEXIE_SCHEMA_VERSION = 5 as const
 
 export class ClassPulseDB extends Dexie {
   sessions!: EntityTable<SessionRecord, 'id'>
@@ -14,6 +15,7 @@ export class ClassPulseDB extends Dexie {
   participationEvents!: EntityTable<ParticipationEvent, 'id'>
   behaviorEvents!: EntityTable<BehaviorEvent, 'id'>
   bathroomEvents!: EntityTable<BathroomEvent, 'id'>
+  assessmentEvents!: EntityTable<AssessmentEvent, 'id'>
 
   constructor() {
     super('classpulse')
@@ -38,6 +40,14 @@ export class ClassPulseDB extends Dexie {
       participationEvents: 'id, sessionId, createdAt',
       behaviorEvents: 'id, sessionId, createdAt',
       bathroomEvents: 'id, sessionId, createdAt',
+    })
+    this.version(5).stores({
+      sessions: 'id, startedAt',
+      settings: 'key',
+      participationEvents: 'id, sessionId, createdAt',
+      behaviorEvents: 'id, sessionId, createdAt',
+      bathroomEvents: 'id, sessionId, createdAt',
+      assessmentEvents: 'id, sessionId, createdAt',
     })
   }
 }

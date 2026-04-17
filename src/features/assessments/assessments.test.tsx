@@ -1,0 +1,128 @@
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { afterEach, describe, expect, it } from 'vitest'
+import App from '../../App'
+import { resetDatabaseForTests } from '../../db/database'
+
+describe('AssessmentsPanel (Slice 8 MVP)', () => {
+  afterEach(async () => {
+    cleanup()
+    await resetDatabaseForTests()
+  })
+
+  it('shows the no-active-session empty state when there is no active session', async () => {
+    render(<App />)
+    const heading = await screen.findByRole('heading', { name: /^assessments$/i })
+    const section = heading.closest('section') as HTMLElement
+    expect(
+      within(section).getByText(/start a session to capture assessment checks/i),
+    ).toBeInTheDocument()
+    expect(
+      within(section).queryByRole('button', { name: /got it/i }),
+    ).not.toBeInTheDocument()
+    expect(
+      within(section).queryByRole('button', { name: /needs reteach/i }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('shows both capture buttons and no-events copy when a session is active', async () => {
+    render(<App />)
+    fireEvent.click(await screen.findByRole('button', { name: /start session/i }))
+    await screen.findByRole('button', { name: /end session/i })
+
+    const heading = screen.getByRole('heading', { name: /^assessments$/i })
+    const section = heading.closest('section') as HTMLElement
+    expect(within(section).getByRole('button', { name: /got it/i })).toBeInTheDocument()
+    expect(
+      within(section).getByRole('button', { name: /needs reteach/i }),
+    ).toBeInTheDocument()
+    expect(within(section).getByText(/no assessment checks yet/i)).toBeInTheDocument()
+  })
+
+  it('captures a got-it check and shows it in the list', async () => {
+    render(<App />)
+    fireEvent.click(await screen.findByRole('button', { name: /start session/i }))
+    await screen.findByRole('button', { name: /end session/i })
+
+    const heading = screen.getByRole('heading', { name: /^assessments$/i })
+    const section = heading.closest('section') as HTMLElement
+    fireEvent.click(within(section).getByRole('button', { name: /got it/i }))
+
+    const list = await within(section).findByRole('list', { name: /recent assessment checks/i })
+    const items = within(list).getAllByRole('listitem')
+    expect(items).toHaveLength(1)
+    expect(items[0].textContent?.toLowerCase()).toContain('got it')
+  })
+
+  it('captures a needs-reteach check and shows it in the list', async () => {
+    render(<App />)
+    fireEvent.click(await screen.findByRole('button', { name: /start session/i }))
+    await screen.findByRole('button', { name: /end session/i })
+
+    const heading = screen.getByRole('heading', { name: /^assessments$/i })
+    const section = heading.closest('section') as HTMLElement
+    fireEvent.click(within(section).getByRole('button', { name: /needs reteach/i }))
+
+    const list = await within(section).findByRole('list', { name: /recent assessment checks/i })
+    const items = within(list).getAllByRole('listitem')
+    expect(items).toHaveLength(1)
+    expect(items[0].textContent?.toLowerCase()).toContain('needs reteach')
+  })
+
+  it('accumulates multiple checks within the active session', async () => {
+    render(<App />)
+    fireEvent.click(await screen.findByRole('button', { name: /start session/i }))
+    await screen.findByRole('button', { name: /end session/i })
+
+    const heading = screen.getByRole('heading', { name: /^assessments$/i })
+    const section = heading.closest('section') as HTMLElement
+
+    fireEvent.click(within(section).getByRole('button', { name: /got it/i }))
+    await within(section).findByRole('list', { name: /recent assessment checks/i })
+    fireEvent.click(within(section).getByRole('button', { name: /needs reteach/i }))
+
+    await waitFor(() => {
+      const list = within(section).getByRole('list', { name: /recent assessment checks/i })
+      expect(within(list).getAllByRole('listitem').length).toBeGreaterThanOrEqual(2)
+    })
+  })
+
+  it('persists assessment checks across remount (reload equivalent)', async () => {
+    const { unmount } = render(<App />)
+    fireEvent.click(await screen.findByRole('button', { name: /start session/i }))
+    await screen.findByRole('button', { name: /end session/i })
+
+    const heading = screen.getByRole('heading', { name: /^assessments$/i })
+    const section = heading.closest('section') as HTMLElement
+    fireEvent.click(within(section).getByRole('button', { name: /got it/i }))
+    await within(section).findByRole('list', { name: /recent assessment checks/i })
+    unmount()
+
+    render(<App />)
+    await screen.findByRole('button', { name: /end session/i })
+    const heading2 = screen.getByRole('heading', { name: /^assessments$/i })
+    const section2 = heading2.closest('section') as HTMLElement
+    const list = await within(section2).findByRole('list', { name: /recent assessment checks/i })
+    expect(within(list).getAllByRole('listitem')).toHaveLength(1)
+  })
+
+  it('returns to the no-active-session empty state after the session is ended', async () => {
+    render(<App />)
+    fireEvent.click(await screen.findByRole('button', { name: /start session/i }))
+    await screen.findByRole('button', { name: /end session/i })
+
+    const heading = screen.getByRole('heading', { name: /^assessments$/i })
+    const section = heading.closest('section') as HTMLElement
+    fireEvent.click(within(section).getByRole('button', { name: /got it/i }))
+    await within(section).findByRole('list', { name: /recent assessment checks/i })
+
+    fireEvent.click(screen.getByRole('button', { name: /end session/i }))
+    await screen.findByRole('button', { name: /start session/i })
+
+    const heading2 = screen.getByRole('heading', { name: /^assessments$/i })
+    const section2 = heading2.closest('section') as HTMLElement
+    expect(
+      within(section2).getByText(/start a session to capture assessment checks/i),
+    ).toBeInTheDocument()
+    expect(within(section2).queryByRole('button', { name: /got it/i })).not.toBeInTheDocument()
+  })
+})

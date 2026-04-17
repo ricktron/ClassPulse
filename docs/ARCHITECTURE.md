@@ -32,14 +32,16 @@ Future slices should add **feature folders** under `src/features/<slice>/` rathe
 
 ## Data model (current scaffold)
 
-Current Dexie schema version: **3**.
+Current Dexie schema version: **5**.
 
 Tables:
 
-- `sessions` — one row per class meeting (`SessionRecord`), including persisted `activeMode` and optional `endedAt`.  
+- `sessions` — one row per class meeting (`SessionRecord`), including persisted `activeMode`, optional `endedAt`, and optional `sessionNotes`.  
 - `settings` — keyed documents, including `schemaVersion`.  
 - `participationEvents` — append-only quick-capture participation rows keyed to a session.  
-- `behaviorEvents` — append-only quick-capture behavior rows keyed to a session.
+- `behaviorEvents` — append-only quick-capture behavior rows keyed to a session.  
+- `bathroomEvents` — append-only bathroom out/back rows keyed to a session.  
+- `assessmentEvents` — append-only assessment check-for-understanding rows keyed to a session (Slice 8 MVP). `createdAt` is capture time; no assessment completion timestamps per `DECISIONS.md` D7.
 
 The standard app runtime currently starts with an **empty local store** and presents an explicit empty state until the teacher starts a session. `seedSampleDataIfEmpty()` exists as an explicit helper for tests and controlled dev/demo paths; it is **not** part of the normal runtime bootstrap.
 

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import type { AssessmentEvent, AssessmentEventKind } from '../../domain/assessment'
 import type { BathroomEvent, BathroomEventKind } from '../../domain/bathroom'
 import type { BehaviorEvent, BehaviorEventKind } from '../../domain/behavior'
 import type { SessionModeV1 } from '../../domain/modes'
@@ -7,6 +8,7 @@ import type { ParticipationEvent } from '../../domain/participation'
 import type { SessionRecord } from '../../domain/session'
 import { resolveActiveSession } from '../../domain/session'
 import { getDatabase } from '../../db/database'
+import { AssessmentsPanel } from '../assessments/AssessmentsPanel'
 import { BathroomPanel } from '../bathroom/BathroomPanel'
 import { BehaviorPanel } from '../behavior/BehaviorPanel'
 import { NotesPanel } from '../notes/NotesPanel'
@@ -23,6 +25,7 @@ type LoadState =
       participationEvents: ParticipationEvent[]
       behaviorEvents: BehaviorEvent[]
       bathroomEvents: BathroomEvent[]
+      assessmentEvents: AssessmentEvent[]
     }
 
 export function AppShell() {
@@ -164,6 +167,30 @@ export function AppShell() {
     setState((prev) => (prev.status === 'ready' ? { ...prev, bathroomEvents: events } : prev))
   }, [])
 
+  /**
+   * Slice 8: Append a minimal assessment check event for the active session.
+   * Append-only; `createdAt` is capture time (teacher tapped), not an
+   * assessment completion timestamp. Completion timestamps are deferred per
+   * `DECISIONS.md` D7.
+   */
+  const captureAssessment = useCallback(
+    async (sessionId: string, kind: AssessmentEventKind) => {
+      const db = await getDatabase()
+      const event: AssessmentEvent = {
+        id: crypto.randomUUID(),
+        sessionId,
+        createdAt: new Date().toISOString(),
+        kind,
+      }
+      await db.assessmentEvents.add(event)
+      const events = (
+        await db.assessmentEvents.where('sessionId').equals(sessionId).toArray()
+      ).sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      setState((prev) => (prev.status === 'ready' ? { ...prev, assessmentEvents: events } : prev))
+    },
+    [],
+  )
+
   if (state.status === 'loading') {
     return (
       <main className="shell">
@@ -280,6 +307,14 @@ export function AppShell() {
         sessionNotes={active?.sessionNotes ?? ''}
         onPersist={(text) => {
           if (active) void persistSessionNotes(active.id, text)
+        }}
+      />
+
+      <AssessmentsPanel
+        sessionId={active?.id}
+        events={state.assessmentEvents}
+        onCapture={(kind) => {
+          if (active) void captureAssessment(active.id, kind)
         }}
       />
     </main>

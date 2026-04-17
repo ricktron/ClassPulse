@@ -146,13 +146,15 @@ button.mode-pill:focus-visible {
 }
 
 .behavior-capture-actions,
-.bathroom-capture-actions {
+.bathroom-capture-actions,
+.assessments-capture-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
 
-.bathroom-event-list {
+.bathroom-event-list,
+.assessments-event-list {
   list-style: none;
   margin: 0.75rem 0 0;
   padding: 0;
@@ -161,7 +163,8 @@ button.mode-pill:focus-visible {
   gap: 0.35rem;
 }
 
-.bathroom-event-item {
+.bathroom-event-item,
+.assessments-event-item {
   font-size: 0.9rem;
   color: var(--muted);
 }

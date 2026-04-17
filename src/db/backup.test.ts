@@ -32,6 +32,7 @@ describe('local JSON backup', () => {
     expect(Array.isArray(doc.data.participationEvents)).toBe(true)
     expect(Array.isArray(doc.data.behaviorEvents)).toBe(true)
     expect(Array.isArray(doc.data.bathroomEvents)).toBe(true)
+    expect(Array.isArray(doc.data.assessmentEvents)).toBe(true)
 
     const text = serializeLocalBackupFile(doc)
     expect(() => JSON.parse(text)).not.toThrow()
@@ -82,6 +83,12 @@ describe('local JSON backup', () => {
         createdAt: string
         kind: 'depart'
       }[],
+      assessmentEvents: [] as {
+        id: string
+        sessionId: string
+        createdAt: string
+        kind: 'check_pass'
+      }[],
     }
     const envelope = {
       format: CLASSPULSE_LOCAL_BACKUP_FORMAT,
@@ -117,6 +124,7 @@ describe('local JSON backup', () => {
             participationEvents: [],
             behaviorEvents: [],
             bathroomEvents: [],
+            assessmentEvents: [],
           },
         }),
       ),
@@ -144,6 +152,7 @@ describe('local JSON backup', () => {
             ],
             behaviorEvents: [],
             bathroomEvents: [],
+            assessmentEvents: [],
           },
         }),
       ),
@@ -176,6 +185,7 @@ describe('local JSON backup', () => {
                 kind: 'depart',
               },
             ],
+            assessmentEvents: [],
           },
         }),
       ),
@@ -208,6 +218,7 @@ describe('local JSON backup', () => {
           },
         ],
         bathroomEvents: [],
+        assessmentEvents: [],
       },
     }
     expect(() => parseAndValidateLocalBackupJson(JSON.stringify(base))).toThrow(/kind/)
@@ -264,6 +275,7 @@ describe('local JSON backup', () => {
                 kind: 'left',
               },
             ],
+            assessmentEvents: [],
           },
         }),
       ),
@@ -290,6 +302,7 @@ describe('local JSON backup', () => {
         participationEvents: [],
         behaviorEvents: [],
         bathroomEvents: [],
+        assessmentEvents: [],
       },
     }
     const validated = parseAndValidateLocalBackupJson(JSON.stringify(envelope))
@@ -318,6 +331,7 @@ describe('local JSON backup', () => {
             participationEvents: [],
             behaviorEvents: [],
             bathroomEvents: [],
+            assessmentEvents: [],
           },
         }),
       ),
@@ -354,12 +368,91 @@ describe('local JSON backup', () => {
           kind: 'depart' as const,
         },
       ],
+      assessmentEvents: [
+        {
+          id: 'ax1',
+          sessionId: 's-import',
+          createdAt: '2026-03-03T08:07:00.000Z',
+          kind: 'check_pass' as const,
+        },
+      ],
     }
     await replaceLocalDatabaseFromBackupTables(db, tables)
     const read = await readBackupTablesFromDb(db)
     expect(read.sessions).toEqual(tables.sessions)
     expect(read.participationEvents).toEqual(tables.participationEvents)
     expect(read.bathroomEvents).toEqual(tables.bathroomEvents)
+    expect(read.assessmentEvents).toEqual(tables.assessmentEvents)
     await db.close()
+  })
+
+  it('rejects invalid assessment kind', () => {
+    expect(() =>
+      parseAndValidateLocalBackupJson(
+        JSON.stringify({
+          format: CLASSPULSE_LOCAL_BACKUP_FORMAT,
+          formatVersion: CLASSPULSE_LOCAL_BACKUP_FORMAT_VERSION,
+          exportedAt: '2026-01-01T00:00:00.000Z',
+          dexieSchemaVersion: CLASSPULSE_DEXIE_SCHEMA_VERSION,
+          data: {
+            sessions: [
+              {
+                id: 's1',
+                title: 'T',
+                startedAt: '2026-01-01T00:00:00.000Z',
+                activeMode: 'assessments',
+              },
+            ],
+            settings: [],
+            participationEvents: [],
+            behaviorEvents: [],
+            bathroomEvents: [],
+            assessmentEvents: [
+              {
+                id: 'a1',
+                sessionId: 's1',
+                createdAt: '2026-01-01T00:00:00.000Z',
+                kind: 'pass',
+              },
+            ],
+          },
+        }),
+      ),
+    ).toThrow(/assessmentEvents\[0\]\.kind/)
+  })
+
+  it('rejects orphan assessment foreign key', () => {
+    expect(() =>
+      parseAndValidateLocalBackupJson(
+        JSON.stringify({
+          format: CLASSPULSE_LOCAL_BACKUP_FORMAT,
+          formatVersion: CLASSPULSE_LOCAL_BACKUP_FORMAT_VERSION,
+          exportedAt: '2026-01-01T00:00:00.000Z',
+          dexieSchemaVersion: CLASSPULSE_DEXIE_SCHEMA_VERSION,
+          data: {
+            sessions: [
+              {
+                id: 's1',
+                title: 'T',
+                startedAt: '2026-01-01T00:00:00.000Z',
+                activeMode: 'assessments',
+              },
+            ],
+            settings: [],
+            participationEvents: [],
+            behaviorEvents: [],
+            bathroomEvents: [],
+            assessmentEvents: [
+              {
+                id: 'a1',
+                sessionId: 'missing',
+                createdAt: '2026-01-01T00:00:00.000Z',
+                kind: 'check_pass',
+              },
+            ],
+          },
+        }),
+      ),
+    ).toThrow(/assessmentEvents\[0\]\.sessionId/)
   })
 })
