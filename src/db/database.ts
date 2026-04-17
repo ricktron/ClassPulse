@@ -4,6 +4,9 @@ import type { ParticipationEvent } from '../domain/participation'
 import type { AppSettingRecord } from '../domain/settings'
 import type { SessionRecord } from '../domain/session'
 
+/** Current Dexie schema version (bump when `stores` change). Used by JSON backup metadata. */
+export const CLASSPULSE_DEXIE_SCHEMA_VERSION = 3 as const
+
 export class ClassPulseDB extends Dexie {
   sessions!: EntityTable<SessionRecord, 'id'>
   settings!: EntityTable<AppSettingRecord, 'key'>

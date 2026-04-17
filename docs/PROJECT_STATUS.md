@@ -1,7 +1,7 @@
 # Project status
 
-**Last updated:** 2026-04-16 (Control Tower operating pack)  
-**Phase:** Bootstrap complete. The local-first foundation shell is already beyond pure scaffold status: **Slice 1** (persisted shell `activeMode`), **Slice 2** (explicit session lifecycle), **Slice 3** (participation quick capture), and **Slice 4** (behavior quick capture) are shipped. **Governance parity lane:** repo-native agent OS (startup checklist, closeout, receipts / handoff, sanity runbook, journal) landed separately — see `docs/ai/` and `docs/WORKFLOWS/`.
+**Last updated:** 2026-04-16 (Slice 5 JSON backup lane)  
+**Phase:** Bootstrap complete. The local-first foundation shell is already beyond pure scaffold status: **Slice 1** (persisted shell `activeMode`), **Slice 2** (explicit session lifecycle), **Slice 3** (participation quick capture), **Slice 4** (behavior quick capture), and **Slice 5** (JSON export + confirmation-gated full replace import) are shipped. **Governance parity lane:** repo-native agent OS (startup checklist, closeout, receipts / handoff, sanity runbook, journal) landed separately — see `docs/ai/` and `docs/WORKFLOWS/`.
 
 ## What exists today
 
@@ -15,6 +15,7 @@
 - Teacher can persist the active mode on the live session row.  
 - Participation panel can **append minimal participation events** and show a recent-events list for the active session.  
 - Behavior panel can **append minimal positive / redirect events** and show a recent-events list for the active session.  
+- Shell includes **JSON export** of all device-local Dexie rows (`sessions`, `settings`, `participationEvents`, `behaviorEvents`) and **JSON import** that **replaces** the local store only after an explicit in-app destructive confirmation (no merge).  
 - Standard runtime starts with an **empty local store**; sample seeding exists only as an explicit helper for tests and controlled dev/demo paths.  
 - PWA manifest + Workbox service worker emitted on **`npm run build`**.  
 - Vitest coverage exists across the app shell, session lifecycle/domain helpers, database helpers, and participation / behavior event flows.  
@@ -37,7 +38,6 @@
 ## What is intentionally not built yet
 
 - Google-connected backup/export flows or OAuth.  
-- Restore/import flows aligned to the new contract baseline.  
 - Class/course roster model aligned to the new contract baseline.  
 - Bathroom, Notes, and Assessments capture surfaces beyond the mode strip placeholders.  
 - Teacher-editable event pack editor.  
@@ -47,7 +47,7 @@
 
 ## Next focus
 
-Take **Slice 5 — JSON export + confirmed import replace** as the **next bounded product slice** (see `docs/SLICE_PLAN.md` and `DECISIONS.md` D14). Optional **Google-connected backup/export** remains the named longer-term durability layer (`DECISIONS.md` D10) and lands **after** that JSON slice without changing v1 replace semantics.
+Take **Slice 6 — Bathroom quick-capture MVP** as the **next bounded product slice** (see `docs/SLICE_PLAN.md`). Optional **Google-connected backup/export** remains the named longer-term durability layer (`DECISIONS.md` D10) and lands **after** local JSON backup/restore without changing v1 replace semantics.
 
 The project is **ready for a separate Control Tower orchestration chat** when the operator wants it; **implementation lanes still follow checked-in repo truth**, not chat memory. Links live under **Agent operating model** below.
 

@@ -23,7 +23,7 @@ Slices **1–4** are already represented in the current shell: persisted `active
 
 | Slice | Focus | Notes |
 |-------|-------|-------|
-| **Slice 5** | JSON export + confirmed import replace | **Locked next product slice** for backup/restore (see `DECISIONS.md` D14): JSON export + confirmation-gated replace import, no merge. Optional Google backup/export follows later (D10). |
+| **Slice 5** | JSON export + confirmed import replace | **Shipped:** JSON export + confirmation-gated replace import, no merge (`DECISIONS.md` D14). Optional Google backup/export follows later (D10). |
 | **Slice 6** | Bathroom quick-capture MVP | Add the first concrete Bathroom mode surface while keeping the flow local-only and intentionally simple. |
 | **Slice 7** | Notes capture MVP | Add lightweight free-form session notes tied to the active session, without broad document tooling. |
 | **Slice 8** | Assessments shell MVP | Add the first assessment capture surface without introducing completion timestamps before v1.1. |

@@ -8,6 +8,8 @@ import { resolveActiveSession } from '../../domain/session'
 import { getDatabase } from '../../db/database'
 import { BehaviorPanel } from '../behavior/BehaviorPanel'
 import { ParticipationPanel } from '../participation/ParticipationPanel'
+import { LocalBackupPanel } from './LocalBackupPanel'
+import { loadShellReadySnapshot } from './load-shell-state'
 
 type LoadState =
   | { status: 'loading' }
@@ -19,39 +21,27 @@ type LoadState =
       behaviorEvents: BehaviorEvent[]
     }
 
-async function loadSessionsFromDb(): Promise<SessionRecord[]> {
-  const db = await getDatabase()
-  return db.sessions.orderBy('startedAt').reverse().toArray()
-}
-
-async function loadParticipationEventsForSession(sessionId: string): Promise<ParticipationEvent[]> {
-  const db = await getDatabase()
-  const rows = await db.participationEvents.where('sessionId').equals(sessionId).toArray()
-  return rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-}
-
-async function loadBehaviorEventsForSession(sessionId: string): Promise<BehaviorEvent[]> {
-  const db = await getDatabase()
-  const rows = await db.behaviorEvents.where('sessionId').equals(sessionId).toArray()
-  return rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-}
-
 export function AppShell() {
   const [state, setState] = useState<LoadState>({ status: 'loading' })
+
+  const reloadFromDb = useCallback(async () => {
+    try {
+      const snapshot = await loadShellReadySnapshot()
+      setState({ status: 'ready', ...snapshot })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      setState({ status: 'error', message })
+    }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
 
     void (async () => {
       try {
-        const sessions = await loadSessionsFromDb()
-        const active = resolveActiveSession(sessions)
-        const participationEvents = active
-          ? await loadParticipationEventsForSession(active.id)
-          : []
-        const behaviorEvents = active ? await loadBehaviorEventsForSession(active.id) : []
+        const snapshot = await loadShellReadySnapshot()
         if (!cancelled) {
-          setState({ status: 'ready', sessions, participationEvents, behaviorEvents })
+          setState({ status: 'ready', ...snapshot })
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Unknown error'
@@ -73,14 +63,8 @@ export function AppShell() {
   const selectMode = useCallback(async (mode: SessionModeV1, sessionId: string) => {
     const db = await getDatabase()
     await db.sessions.update(sessionId, { activeMode: mode })
-    const sessions = await db.sessions.orderBy('startedAt').reverse().toArray()
-    const active = resolveActiveSession(sessions)
-    const participationEvents = active
-      ? await loadParticipationEventsForSession(active.id)
-      : []
-    const behaviorEvents = active ? await loadBehaviorEventsForSession(active.id) : []
-    setState({ status: 'ready', sessions, participationEvents, behaviorEvents })
-  }, [])
+    await reloadFromDb()
+  }, [reloadFromDb])
 
   /**
    * Slice 2: Start a new session. The new session immediately becomes active.
@@ -96,14 +80,8 @@ export function AppShell() {
       activeMode: 'participation',
     }
     await db.sessions.add(newSession)
-    const sessions = await db.sessions.orderBy('startedAt').reverse().toArray()
-    const active = resolveActiveSession(sessions)
-    const participationEvents = active
-      ? await loadParticipationEventsForSession(active.id)
-      : []
-    const behaviorEvents = active ? await loadBehaviorEventsForSession(active.id) : []
-    setState({ status: 'ready', sessions, participationEvents, behaviorEvents })
-  }, [])
+    await reloadFromDb()
+  }, [reloadFromDb])
 
   /**
    * Slice 2: End the active session. Sets `endedAt`; the session is no longer
@@ -113,9 +91,8 @@ export function AppShell() {
   const endSession = useCallback(async (sessionId: string) => {
     const db = await getDatabase()
     await db.sessions.update(sessionId, { endedAt: new Date().toISOString() })
-    const sessions = await db.sessions.orderBy('startedAt').reverse().toArray()
-    setState({ status: 'ready', sessions, participationEvents: [], behaviorEvents: [] })
-  }, [])
+    await reloadFromDb()
+  }, [reloadFromDb])
 
   /**
    * Slice 3: Append a minimal participation event for the active session.
@@ -129,7 +106,9 @@ export function AppShell() {
       createdAt: new Date().toISOString(),
     }
     await db.participationEvents.add(event)
-    const events = await loadParticipationEventsForSession(sessionId)
+    const events = (
+      await db.participationEvents.where('sessionId').equals(sessionId).toArray()
+    ).sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     setState((prev) =>
       prev.status === 'ready' ? { ...prev, participationEvents: events } : prev,
     )
@@ -148,10 +127,10 @@ export function AppShell() {
       kind,
     }
     await db.behaviorEvents.add(event)
-    const events = await loadBehaviorEventsForSession(sessionId)
-    setState((prev) =>
-      prev.status === 'ready' ? { ...prev, behaviorEvents: events } : prev,
+    const events = (await db.behaviorEvents.where('sessionId').equals(sessionId).toArray()).sort(
+      (a, b) => b.createdAt.localeCompare(a.createdAt),
     )
+    setState((prev) => (prev.status === 'ready' ? { ...prev, behaviorEvents: events } : prev))
   }, [])
 
   if (state.status === 'loading') {
@@ -209,6 +188,8 @@ export function AppShell() {
           </div>
         )}
       </section>
+
+      <LocalBackupPanel onReload={reloadFromDb} />
 
       <section className="panel" aria-labelledby="modes-heading">
         <h2 id="modes-heading">v1 mode strip</h2>
