@@ -17,7 +17,7 @@ describe('local JSON backup', () => {
     await resetDatabaseForTests()
   })
 
-  it('export payload includes self-describing metadata and four table arrays', async () => {
+  it('export payload includes self-describing metadata and all table arrays', async () => {
     const db = new ClassPulseDB()
     await db.open()
     await seedSampleDataIfEmpty(db)
@@ -31,6 +31,7 @@ describe('local JSON backup', () => {
     expect(Array.isArray(doc.data.settings)).toBe(true)
     expect(Array.isArray(doc.data.participationEvents)).toBe(true)
     expect(Array.isArray(doc.data.behaviorEvents)).toBe(true)
+    expect(Array.isArray(doc.data.bathroomEvents)).toBe(true)
 
     const text = serializeLocalBackupFile(doc)
     expect(() => JSON.parse(text)).not.toThrow()
@@ -75,6 +76,12 @@ describe('local JSON backup', () => {
         createdAt: string
         kind: 'positive'
       }[],
+      bathroomEvents: [] as {
+        id: string
+        sessionId: string
+        createdAt: string
+        kind: 'depart'
+      }[],
     }
     const envelope = {
       format: CLASSPULSE_LOCAL_BACKUP_FORMAT,
@@ -104,7 +111,13 @@ describe('local JSON backup', () => {
           formatVersion: 1,
           exportedAt: 'x',
           dexieSchemaVersion: CLASSPULSE_DEXIE_SCHEMA_VERSION,
-          data: { sessions: [], settings: [], participationEvents: [], behaviorEvents: [] },
+          data: {
+            sessions: [],
+            settings: [],
+            participationEvents: [],
+            behaviorEvents: [],
+            bathroomEvents: [],
+          },
         }),
       ),
     ).toThrow(BackupValidationError)
@@ -130,6 +143,39 @@ describe('local JSON backup', () => {
               { id: 'p1', sessionId: 'missing', createdAt: '2026-01-01T00:00:00.000Z' },
             ],
             behaviorEvents: [],
+            bathroomEvents: [],
+          },
+        }),
+      ),
+    ).toThrow(/sessionId/)
+
+    expect(() =>
+      parseAndValidateLocalBackupJson(
+        JSON.stringify({
+          format: CLASSPULSE_LOCAL_BACKUP_FORMAT,
+          formatVersion: CLASSPULSE_LOCAL_BACKUP_FORMAT_VERSION,
+          exportedAt: '2026-01-01T00:00:00.000Z',
+          dexieSchemaVersion: CLASSPULSE_DEXIE_SCHEMA_VERSION,
+          data: {
+            sessions: [
+              {
+                id: 's1',
+                title: 'T',
+                startedAt: '2026-01-01T00:00:00.000Z',
+                activeMode: 'participation',
+              },
+            ],
+            settings: [],
+            participationEvents: [],
+            behaviorEvents: [],
+            bathroomEvents: [
+              {
+                id: 'br1',
+                sessionId: 'missing',
+                createdAt: '2026-01-01T00:00:00.000Z',
+                kind: 'depart',
+              },
+            ],
           },
         }),
       ),
@@ -161,6 +207,7 @@ describe('local JSON backup', () => {
             kind: 'nope',
           },
         ],
+        bathroomEvents: [],
       },
     }
     expect(() => parseAndValidateLocalBackupJson(JSON.stringify(base))).toThrow(/kind/)
@@ -189,6 +236,40 @@ describe('local JSON backup', () => {
     expect(() => parseAndValidateLocalBackupJson(JSON.stringify(dup))).toThrow(/Duplicate id/)
   })
 
+  it('rejects invalid bathroom kind', () => {
+    expect(() =>
+      parseAndValidateLocalBackupJson(
+        JSON.stringify({
+          format: CLASSPULSE_LOCAL_BACKUP_FORMAT,
+          formatVersion: CLASSPULSE_LOCAL_BACKUP_FORMAT_VERSION,
+          exportedAt: '2026-01-01T00:00:00.000Z',
+          dexieSchemaVersion: CLASSPULSE_DEXIE_SCHEMA_VERSION,
+          data: {
+            sessions: [
+              {
+                id: 's1',
+                title: 'T',
+                startedAt: '2026-01-01T00:00:00.000Z',
+                activeMode: 'participation',
+              },
+            ],
+            settings: [],
+            participationEvents: [],
+            behaviorEvents: [],
+            bathroomEvents: [
+              {
+                id: 'br1',
+                sessionId: 's1',
+                createdAt: '2026-01-01T00:00:00.000Z',
+                kind: 'left',
+              },
+            ],
+          },
+        }),
+      ),
+    ).toThrow(/bathroomEvents\[0\]\.kind/)
+  })
+
   it('readBackupTablesFromDb matches post-replace Dexie contents', async () => {
     const db = new ClassPulseDB()
     await db.open()
@@ -211,11 +292,20 @@ describe('local JSON backup', () => {
         createdAt: string
         kind: 'redirect'
       }[],
+      bathroomEvents: [
+        {
+          id: 'br1',
+          sessionId: 's-import',
+          createdAt: '2026-03-03T08:06:00.000Z',
+          kind: 'depart' as const,
+        },
+      ],
     }
     await replaceLocalDatabaseFromBackupTables(db, tables)
     const read = await readBackupTablesFromDb(db)
     expect(read.sessions).toEqual(tables.sessions)
     expect(read.participationEvents).toEqual(tables.participationEvents)
+    expect(read.bathroomEvents).toEqual(tables.bathroomEvents)
     await db.close()
   })
 })

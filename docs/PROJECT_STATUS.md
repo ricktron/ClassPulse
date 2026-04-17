@@ -1,13 +1,13 @@
 # Project status
 
-**Last updated:** 2026-04-16 (Slice 5 JSON backup lane)  
-**Phase:** Bootstrap complete. The local-first foundation shell is already beyond pure scaffold status: **Slice 1** (persisted shell `activeMode`), **Slice 2** (explicit session lifecycle), **Slice 3** (participation quick capture), **Slice 4** (behavior quick capture), and **Slice 5** (JSON export + confirmation-gated full replace import) are shipped. **Governance parity lane:** repo-native agent OS (startup checklist, closeout, receipts / handoff, sanity runbook, journal) landed separately — see `docs/ai/` and `docs/WORKFLOWS/`.
+**Last updated:** 2026-04-16 (Slice 6 bathroom quick-capture lane)  
+**Phase:** Bootstrap complete. The local-first foundation shell is already beyond pure scaffold status: **Slice 1** (persisted shell `activeMode`), **Slice 2** (explicit session lifecycle), **Slice 3** (participation quick capture), **Slice 4** (behavior quick capture), **Slice 5** (JSON export + confirmation-gated full replace import), and **Slice 6** (bathroom quick capture: out/back events, Dexie `bathroomEvents`, backup parity) are shipped. **Governance parity lane:** repo-native agent OS (startup checklist, closeout, receipts / handoff, sanity runbook, journal) landed separately — see `docs/ai/` and `docs/WORKFLOWS/`.
 
 ## What exists today
 
 - Vite + React + TypeScript app with a **minimal live shell** (`AppShell`).  
 - Fixed v1 mode strip: **Sleep, Participation, Behavior, Bathroom, Notes, Assessments**.  
-- Dexie **IndexedDB** database `classpulse` with schema version **3** (`sessions`, `settings`, `participationEvents`, `behaviorEvents`).  
+- Dexie **IndexedDB** database `classpulse` with schema version **4** (`sessions`, `settings`, `participationEvents`, `behaviorEvents`, `bathroomEvents`).  
 - `SessionRecord` carries persisted `activeMode` and optional `endedAt`; `resolveActiveSession` makes primary-session selection explicit and deterministic.  
 - Shell shows a **clear empty state** (no-active-session message + "Start session" button) when no active session exists.  
 - Teacher can **start a new session** and **end the active session**.  
@@ -15,7 +15,8 @@
 - Teacher can persist the active mode on the live session row.  
 - Participation panel can **append minimal participation events** and show a recent-events list for the active session.  
 - Behavior panel can **append minimal positive / redirect events** and show a recent-events list for the active session.  
-- Shell includes **JSON export** of all device-local Dexie rows (`sessions`, `settings`, `participationEvents`, `behaviorEvents`) and **JSON import** that **replaces** the local store only after an explicit in-app destructive confirmation (no merge).  
+- Bathroom panel can **append minimal out (depart) / back (return) events** and show a recent-events list for the active session.  
+- Shell includes **JSON export** of all device-local Dexie rows (`sessions`, `settings`, `participationEvents`, `behaviorEvents`, `bathroomEvents`) and **JSON import** that **replaces** the local store only after an explicit in-app destructive confirmation (no merge).  
 - Standard runtime starts with an **empty local store**; sample seeding exists only as an explicit helper for tests and controlled dev/demo paths.  
 - PWA manifest + Workbox service worker emitted on **`npm run build`**.  
 - Vitest coverage exists across the app shell, session lifecycle/domain helpers, database helpers, and participation / behavior event flows.  
@@ -33,13 +34,13 @@
   - explicit session closure
   - backgrounding as checkpoint only
   - small fixed starter event/tag vocabulary
-- The currently shipped shell predates parts of that contract baseline in one important way: it still persists separate `participationEvents` and `behaviorEvents`. Future slices should converge toward the canonical contract rather than treating the current split as final.
+- The currently shipped shell predates parts of that contract baseline in one important way: it still persists separate `participationEvents`, `behaviorEvents`, and `bathroomEvents`. Future slices should converge toward the canonical contract rather than treating the current split as final.
 
 ## What is intentionally not built yet
 
 - Google-connected backup/export flows or OAuth.  
 - Class/course roster model aligned to the new contract baseline.  
-- Bathroom, Notes, and Assessments capture surfaces beyond the mode strip placeholders.  
+- Notes and Assessments capture surfaces beyond the mode strip placeholders.  
 - Teacher-editable event pack editor.  
 - Reports, analytics, transcripts, and hall-pass integrations.  
 - Assessment completion timestamps (scheduled post-true-v1 per `DECISIONS.md` D7).  
@@ -47,7 +48,7 @@
 
 ## Next focus
 
-Take **Slice 6 — Bathroom quick-capture MVP** as the **next bounded product slice** (see `docs/SLICE_PLAN.md`). Optional **Google-connected backup/export** remains the named longer-term durability layer (`DECISIONS.md` D10) and lands **after** local JSON backup/restore without changing v1 replace semantics.
+Take **Slice 7 — Notes capture MVP** as the **next bounded product slice** (see `docs/SLICE_PLAN.md`). Optional **Google-connected backup/export** remains the named longer-term durability layer (`DECISIONS.md` D10) and lands **after** local JSON backup/restore without changing v1 replace semantics.
 
 The project is **ready for a separate Control Tower orchestration chat** when the operator wants it; **implementation lanes still follow checked-in repo truth**, not chat memory. Links live under **Agent operating model** below.
 

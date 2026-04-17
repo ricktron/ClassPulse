@@ -28,6 +28,7 @@ function makeValidBackupEnvelope(overrides?: {
       settings: [],
       participationEvents: overrides?.participationEvents ?? [],
       behaviorEvents: [],
+      bathroomEvents: [],
     },
   }
 }

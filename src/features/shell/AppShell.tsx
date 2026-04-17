@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import type { BathroomEvent, BathroomEventKind } from '../../domain/bathroom'
 import type { BehaviorEvent, BehaviorEventKind } from '../../domain/behavior'
 import type { SessionModeV1 } from '../../domain/modes'
 import { SESSION_MODES_V1 } from '../../domain/modes'
@@ -6,6 +7,7 @@ import type { ParticipationEvent } from '../../domain/participation'
 import type { SessionRecord } from '../../domain/session'
 import { resolveActiveSession } from '../../domain/session'
 import { getDatabase } from '../../db/database'
+import { BathroomPanel } from '../bathroom/BathroomPanel'
 import { BehaviorPanel } from '../behavior/BehaviorPanel'
 import { ParticipationPanel } from '../participation/ParticipationPanel'
 import { LocalBackupPanel } from './LocalBackupPanel'
@@ -19,6 +21,7 @@ type LoadState =
       sessions: SessionRecord[]
       participationEvents: ParticipationEvent[]
       behaviorEvents: BehaviorEvent[]
+      bathroomEvents: BathroomEvent[]
     }
 
 export function AppShell() {
@@ -133,6 +136,21 @@ export function AppShell() {
     setState((prev) => (prev.status === 'ready' ? { ...prev, behaviorEvents: events } : prev))
   }, [])
 
+  const captureBathroom = useCallback(async (sessionId: string, kind: BathroomEventKind) => {
+    const db = await getDatabase()
+    const event: BathroomEvent = {
+      id: crypto.randomUUID(),
+      sessionId,
+      createdAt: new Date().toISOString(),
+      kind,
+    }
+    await db.bathroomEvents.add(event)
+    const events = (await db.bathroomEvents.where('sessionId').equals(sessionId).toArray()).sort(
+      (a, b) => b.createdAt.localeCompare(a.createdAt),
+    )
+    setState((prev) => (prev.status === 'ready' ? { ...prev, bathroomEvents: events } : prev))
+  }, [])
+
   if (state.status === 'loading') {
     return (
       <main className="shell">
@@ -233,6 +251,14 @@ export function AppShell() {
         events={state.behaviorEvents}
         onCapture={(kind) => {
           if (active) void captureBehavior(active.id, kind)
+        }}
+      />
+
+      <BathroomPanel
+        sessionId={active?.id}
+        events={state.bathroomEvents}
+        onCapture={(kind) => {
+          if (active) void captureBathroom(active.id, kind)
         }}
       />
     </main>

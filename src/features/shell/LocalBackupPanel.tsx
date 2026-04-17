@@ -145,8 +145,9 @@ export function LocalBackupPanel({ onReload }: Props) {
         <div className="backup-confirm" role="region" aria-label="Confirm import">
           <p className="backup-confirm-title">Replace all local ClassPulse data?</p>
           <p className="muted fineprint">
-            This will permanently remove every session, setting, and capture event stored in this
-            browser for ClassPulse, then load the backup file instead. This cannot be undone.
+            This will permanently remove every session, setting, participation, behavior, and
+            bathroom capture row stored in this browser for ClassPulse, then load the backup file
+            instead. This cannot be undone.
           </p>
           <div className="backup-confirm-buttons">
             <button type="button" onClick={handleCancelReplace} disabled={busy !== null}>

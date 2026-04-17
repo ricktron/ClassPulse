@@ -144,3 +144,24 @@ button.mode-pill:focus-visible {
   font-size: 0.9rem;
   color: var(--muted);
 }
+
+.behavior-capture-actions,
+.bathroom-capture-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.bathroom-event-list {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.bathroom-event-item {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
