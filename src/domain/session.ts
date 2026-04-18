@@ -22,9 +22,15 @@ export interface SessionRecord {
   sessionNotes?: string
 }
 
+export type ClosedSessionRecord = SessionRecord & { endedAt: string }
+
 /** A session is active when it has not been explicitly ended by the teacher. */
 export function isActiveSession(session: SessionRecord): boolean {
   return session.endedAt === undefined
+}
+
+export function isClosedSession(session: SessionRecord): session is ClosedSessionRecord {
+  return session.endedAt !== undefined
 }
 
 /**
@@ -38,4 +44,20 @@ export function resolveActiveSession(sessions: SessionRecord[]): SessionRecord |
   const active = sessions.filter(isActiveSession)
   if (active.length === 0) return undefined
   return active.reduce((best, s) => (s.startedAt > best.startedAt ? s : best))
+}
+
+/**
+ * Returns closed sessions ordered by most-recent end time first.
+ *
+ * View-only history must not silently revive a closed session, so this helper
+ * explicitly filters out any live session before sorting.
+ */
+export function listClosedSessions(sessions: SessionRecord[]): ClosedSessionRecord[] {
+  return sessions
+    .filter(isClosedSession)
+    .sort((a, b) => {
+      const endedCompare = b.endedAt.localeCompare(a.endedAt)
+      if (endedCompare !== 0) return endedCompare
+      return b.startedAt.localeCompare(a.startedAt)
+    })
 }
