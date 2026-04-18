@@ -1,8 +1,12 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import App from '../../App'
-import { resetDatabaseForTests } from '../../db/database'
-import { isActiveSession, resolveActiveSession } from '../../domain/session'
+import { getDatabase, resetDatabaseForTests } from '../../db/database'
+import {
+  isActiveSession,
+  listClosedSessions,
+  resolveActiveSession,
+} from '../../domain/session'
 import type { SessionRecord } from '../../domain/session'
 
 // ---------------------------------------------------------------------------
@@ -89,6 +93,38 @@ describe('resolveActiveSession', () => {
   })
 })
 
+describe('listClosedSessions', () => {
+  it('returns only closed sessions ordered by most recent endedAt first', () => {
+    const sessions: SessionRecord[] = [
+      {
+        id: 'active',
+        title: 'Active',
+        startedAt: '2026-01-01T12:00:00.000Z',
+        activeMode: 'notes',
+      },
+      {
+        id: 'older-closed',
+        title: 'Older closed',
+        startedAt: '2026-01-01T09:00:00.000Z',
+        endedAt: '2026-01-01T10:00:00.000Z',
+        activeMode: 'participation',
+      },
+      {
+        id: 'newer-closed',
+        title: 'Newer closed',
+        startedAt: '2026-01-01T10:30:00.000Z',
+        endedAt: '2026-01-01T11:00:00.000Z',
+        activeMode: 'behavior',
+      },
+    ]
+
+    expect(listClosedSessions(sessions).map((session) => session.id)).toEqual([
+      'newer-closed',
+      'older-closed',
+    ])
+  })
+})
+
 // ---------------------------------------------------------------------------
 // Integration tests — session lifecycle through the shell UI
 // ---------------------------------------------------------------------------
@@ -130,8 +166,8 @@ describe('Session lifecycle (shell)', () => {
     const sessionSection = sessionHeading.closest('section') as HTMLElement
     expect(within(sessionSection).queryByText(/no active session/i)).not.toBeInTheDocument()
     expect(within(sessionSection).getByText('participation')).toBeInTheDocument()
+    expect(within(sessionSection).getByText(/active now/i)).toBeInTheDocument()
     expect(within(sessionSection).getByRole('button', { name: /end session/i })).toBeInTheDocument()
-    // Mode strip participation button becomes active.
     expect(screen.getByRole('button', { name: 'participation' })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -140,11 +176,9 @@ describe('Session lifecycle (shell)', () => {
 
   it('ending the active session transitions back to the empty state', async () => {
     render(<App />)
-    // Start a session and wait for it to become active.
     fireEvent.click(await screen.findByRole('button', { name: /start session/i }))
     const endBtn = await screen.findByRole('button', { name: /end session/i })
     fireEvent.click(endBtn)
-    // Wait for the start button to reappear — confirms state settled.
     await screen.findByRole('button', { name: /start session/i })
 
     const sessionHeading = screen.getByRole('heading', {
@@ -155,19 +189,15 @@ describe('Session lifecycle (shell)', () => {
     expect(
       within(sessionSection).getByRole('button', { name: /start session/i }),
     ).toBeInTheDocument()
-    // Mode strip should be disabled again.
     expect(screen.getByRole('button', { name: 'participation' })).toBeDisabled()
   })
 
   it('active session and its mode persist across a remount', async () => {
     const { unmount } = render(<App />)
-    // Start a session and wait for it to become active.
     fireEvent.click(await screen.findByRole('button', { name: /start session/i }))
     await screen.findByRole('button', { name: /end session/i })
-    // Switch to behavior mode.
     fireEvent.click(screen.getByRole('button', { name: 'behavior' }))
 
-    // Wait for behavior mode to be reflected in the session panel before unmounting.
     const sessionHeading = screen.getByRole('heading', { name: /session \(device-local\)/i })
     const sessionSection = sessionHeading.closest('section') as HTMLElement
     expect(await within(sessionSection).findByText('behavior')).toBeInTheDocument()
@@ -178,7 +208,6 @@ describe('Session lifecycle (shell)', () => {
       name: /session \(device-local\)/i,
     })
     const sessionSection2 = sessionHeading2.closest('section') as HTMLElement
-    // Session still active and mode preserved.
     expect(within(sessionSection2).getByText('behavior')).toBeInTheDocument()
     expect(await screen.findByRole('button', { name: 'behavior' })).toHaveAttribute(
       'aria-pressed',
@@ -186,4 +215,72 @@ describe('Session lifecycle (shell)', () => {
     )
   })
 
+  it('shows recent closed sessions without silently reviving them', async () => {
+    const db = await getDatabase()
+    await db.sessions.bulkAdd([
+      {
+        id: 'closed-older',
+        title: 'Older closed session',
+        startedAt: '2026-01-01T09:00:00.000Z',
+        endedAt: '2026-01-01T09:50:00.000Z',
+        activeMode: 'participation',
+      },
+      {
+        id: 'closed-newer',
+        title: 'Newer closed session',
+        startedAt: '2026-01-01T10:00:00.000Z',
+        endedAt: '2026-01-01T10:55:00.000Z',
+        activeMode: 'notes',
+      },
+    ])
+
+    render(<App />)
+
+    const sessionHeading = await screen.findByRole('heading', {
+      name: /session \(device-local\)/i,
+    })
+    const sessionSection = sessionHeading.closest('section') as HTMLElement
+    const historyList = within(sessionSection).getByRole('list', {
+      name: /recent closed sessions/i,
+    })
+
+    expect(within(sessionSection).getByText(/no active session/i)).toBeInTheDocument()
+    expect(within(sessionSection).queryByRole('button', { name: /end session/i })).not.toBeInTheDocument()
+    expect(within(historyList).getByText('Newer closed session')).toBeInTheDocument()
+    expect(within(historyList).getByText('Older closed session')).toBeInTheDocument()
+  })
+
+  it('keeps the active session separate from recent closed history', async () => {
+    const db = await getDatabase()
+    await db.sessions.bulkAdd([
+      {
+        id: 'closed-session',
+        title: 'Closed history item',
+        startedAt: '2026-01-01T09:00:00.000Z',
+        endedAt: '2026-01-01T09:50:00.000Z',
+        activeMode: 'participation',
+      },
+      {
+        id: 'active-session',
+        title: 'Live session now',
+        startedAt: '2026-01-01T10:00:00.000Z',
+        activeMode: 'behavior',
+      },
+    ])
+
+    render(<App />)
+
+    const sessionHeading = await screen.findByRole('heading', {
+      name: /session \(device-local\)/i,
+    })
+    const sessionSection = sessionHeading.closest('section') as HTMLElement
+    const historyList = within(sessionSection).getByRole('list', {
+      name: /recent closed sessions/i,
+    })
+
+    expect(within(sessionSection).getByText('Live session now')).toBeInTheDocument()
+    expect(within(sessionSection).getByRole('button', { name: /end session/i })).toBeInTheDocument()
+    expect(within(historyList).getByText('Closed history item')).toBeInTheDocument()
+    expect(within(historyList).queryByText('Live session now')).not.toBeInTheDocument()
+  })
 })
