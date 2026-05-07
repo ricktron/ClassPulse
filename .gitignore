@@ -25,6 +25,10 @@ dist-ssr
 # Test / tooling
 coverage/
 
+# Python (stdlib scripts / local checks)
+__pycache__/
+*.py[cod]
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
