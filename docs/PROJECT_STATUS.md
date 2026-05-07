@@ -1,6 +1,6 @@
 # Project status
 
-**Last updated:** 2026-04-17 (Slice 8 assessments shell MVP lane)  
+**Last updated:** 2026-05-07 (docs/tooling: guidance budget checker + minimal auto-loaded guidance note)
 **Phase:** Bootstrap complete. The local-first foundation shell is already beyond pure scaffold status: **Slice 1** (persisted shell `activeMode`), **Slice 2** (explicit session lifecycle), **Slice 3** (participation quick capture), **Slice 4** (behavior quick capture), **Slice 5** (JSON export + confirmation-gated full replace import), **Slice 6** (bathroom quick capture: out/back events, Dexie `bathroomEvents`, backup parity), **Slice 7** (session-scoped free-form notes on `SessionRecord.sessionNotes`, `NotesPanel`, local persistence + backup parity), and **Slice 8** (assessments shell MVP: session-scoped check-for-understanding pass/fail capture via Dexie `assessmentEvents`, backup parity; no completion timestamps per `DECISIONS.md` D7) are shipped. **Governance parity lane:** repo-native agent OS (startup checklist, closeout, receipts / handoff, sanity runbook, journal) landed separately — see `docs/ai/` and `docs/WORKFLOWS/`.
 
 ## What exists today
@@ -56,6 +56,7 @@ The project is **ready for a separate Control Tower orchestration chat** when th
 
 ## Process posture (strategy alignment)
 
+- **Guidance budget (docs/tooling only):** [`scripts/check_guidance_budget.py`](../scripts/check_guidance_budget.py) is a warn-first scan for auto-loaded guidance files; details in [`docs/RUNBOOK_SanityChecks.md`](RUNBOOK_SanityChecks.md) (**Minimal auto-loaded guidance**). No app, runtime, storage, test suite, CI, or dependency behavior changed.
 - **Governance parity** (startup checklist, closeout, receipts, handoff standard, sanity runbook) is treated as **complete and sufficient for now**.  
 - **Optional governance automation** (e.g. scripted handoff rebuild locks) stays **deferred** — **do not reopen** that lane unless receipt/handoff automation is **clearly** worth the complexity.  
 - Prefer **fresh bounded slice chats** for new implementation work, aligned to `docs/SLICE_PLAN.md`.  

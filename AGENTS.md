@@ -8,6 +8,8 @@ Binding guidance for **humans** and **AI coding assistants** working on **ClassP
 
 **Task-based depth:** For implementation or debugging sessions, use [`docs/WORKFLOWS/ENGINEERING_SESSION_HABITS.md`](docs/WORKFLOWS/ENGINEERING_SESSION_HABITS.md) for the session contract and verification discipline.
 
+**Guidance budget:** Keep auto-loaded guidance lean — see **Minimal auto-loaded guidance** in [`docs/RUNBOOK_SanityChecks.md`](docs/RUNBOOK_SanityChecks.md); optionally run `python3 scripts/check_guidance_budget.py` (warnings only).
+
 ## Repo boundary (ClassPulse only)
 
 - **This repository is for ClassPulse only.** If the user prompt is about another repository or project (implementation, debugging, or documentation that belongs elsewhere), **stop immediately** and **fail loudly** before discovery, tool use, or edits in this repo.

@@ -50,6 +50,16 @@ If you change paths in `AGENTS.md`, `docs/ai/AGENT_STARTUP_CHECKLIST.md`, or wor
 - Re-run the **Structural** block above.  
 - Spot-check that new links resolve from the repository root.
 
+## Minimal auto-loaded guidance
+
+[`AGENTS.md`](../AGENTS.md) is the **binding entrypoint** for humans and assistants — not the entire repository brain. Keep **auto-loaded** guidance (what lives in `AGENTS.md`, `.cursorrules`, Cursor rules, and similar files agents load by default) focused on **repo boundary**, **source-of-truth hierarchy**, **safety**, **verification**, **rollback**, **local-first constraints**, and **routing** to deeper docs. Put longer explanations in workflows, runbooks, and decision docs instead of duplicating them at startup.
+
+The guidance budget checker below is **warn-first**: use it as a signal to stay disciplined, **not** as permission to strip binding rules or ship unsafe shortcuts.
+
+```bash
+python3 scripts/check_guidance_budget.py
+```
+
 ## Related docs
 
 - [`AGENTS.md`](../AGENTS.md)  
